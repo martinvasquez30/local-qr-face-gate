@@ -1,0 +1,49 @@
+# --- Python ---
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# --- Node ---
+node_modules/
+dist/
+*.log
+
+# --- Environment & secrets ---
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# --- Jupyter ---
+.ipynb_checkpoints/
+
+# --- Datasets (download with scripts, never commit) ---
+datasets/
+ml/data/
+scikit_learn_data/
+
+# --- Local data (never commit) ---
+*.db
+*.sqlite
+*.sqlite3
+data/
+
+# --- Biometric data & models (never commit) ---
+faces/
+enrollments/
+models/
+*.onnx
+*.pth
+*.pt
+*.dat
+
+# --- Editors / OS ---
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
