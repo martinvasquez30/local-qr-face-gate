@@ -95,7 +95,54 @@ npm install
 npm run dev
 ```
 
-The app runs at http://localhost:5173 and shows whether the backend is reachable.
+The app runs at http://localhost:5173. Sign in with the demo account below; the home
+screen shows whether the backend is reachable.
+
+### Demo login
+
+SSO is not set up yet, so there is a **temporary** email/password login with one demo
+user kept in memory:
+
+| Email | Password |
+|---|---|
+| `admin@example.com` | `admin123` |
+
+It will be replaced by SSO (see [`docs/architecture.md`](docs/architecture.md#temporary-login-until-sso-is-ready)).
+
+### Environment variables
+
+All variables are optional in development.
+
+| Variable | Where | Default | Purpose |
+|---|---|---|---|
+| `TOKEN_SECRET` | backend | random on each start | Key that signs access tokens. Without it, restarting the backend logs everyone out. |
+| `TOKEN_TTL_SECONDS` | backend | `3600` | How long a login lasts, in seconds. |
+| `CORS_ORIGINS` | backend | `http://localhost:5173` | Comma-separated list of frontend origins allowed to call the API. |
+| `VITE_API_BASE_URL` | frontend | `http://localhost:8000` | Backend URL. Copy `frontend/.env.example` to `frontend/.env` to change it. |
+
+To keep sessions across backend restarts, set a fixed secret before starting the server:
+
+```bash
+# macOS/Linux
+export TOKEN_SECRET="$(python -c 'import secrets; print(secrets.token_urlsafe(32))')"
+# Windows PowerShell
+$env:TOKEN_SECRET = python -c "import secrets; print(secrets.token_urlsafe(32))"
+```
+
+## Languages
+
+The UI is available in **Spanish** and **English**, using our own translation files
+(no external translation APIs):
+
+- `frontend/src/locales/es.json` and `en.json` hold every visible text. Both files must
+  have the same keys.
+- The selector in the top bar changes the language and remembers it in the browser.
+- The first time, the app uses the browser language if it is supported, otherwise Spanish.
+- The backend never sends text to show; it sends error codes (for example
+  `invalid_credentials`) that the frontend translates with the `errors.<code>` key.
+
+To add a language, copy `es.json` to a new file (for example `pt.json`), translate the
+values, and register it in `frontend/src/i18n.js` (`LANGUAGE_NAMES` and `resources`).
 
 ### ML pipeline
 
@@ -104,8 +151,9 @@ See [`ml/README.md`](ml/README.md).
 ## Roadmap
 
 - [x] Project scaffold, documentation and health check
+- [x] Temporary email/password login (stand-in until SSO)
 - [ ] SSO login (Microsoft Entra ID)
-- [ ] Multi-language support (Spanish / English)
+- [x] Multi-language support (Spanish / English)
 - [ ] User management (admin portal)
 - [ ] ML: evaluate candidate models (FAR / FRR, ROC) and choose a threshold
 - [ ] ML: export the chosen model to ONNX and run it in the browser (parity check)
@@ -125,8 +173,20 @@ has been reviewed and studied by the author.
 | Date | Tool | Used for |
 |---|---|---|
 | 2026-10-11 | Claude (Anthropic) | Initial project scaffold, README and architecture notes |
+| 2026-10-18 | Claude Code (Anthropic) | Temporary login (backend and frontend), password hashing and signed tokens, i18n setup with Spanish/English files, styles, pytest tests and week 2 docs |
 
-Third-party code and libraries will be credited here as they are added.
+### Third-party libraries
+
+| Library | Used for | License |
+|---|---|---|
+| [FastAPI](https://fastapi.tiangolo.com/) | Backend web framework (includes Pydantic and Starlette) | MIT |
+| [Uvicorn](https://www.uvicorn.org/) | ASGI server that runs the backend | BSD-3-Clause |
+| [pytest](https://pytest.org/) | Backend tests | MIT |
+| [HTTPX](https://www.python-httpx.org/) | HTTP client used by FastAPI's `TestClient` | BSD-3-Clause |
+| [React](https://react.dev/) | Frontend UI | MIT |
+| [Vite](https://vitejs.dev/) and `@vitejs/plugin-react` | Frontend dev server and build | MIT |
+| [i18next](https://www.i18next.com/) | Translation engine (with our own translation files) | MIT |
+| [react-i18next](https://react.i18next.com/) | React bindings for i18next (`useTranslation`) | MIT |
 
 ## Author
 

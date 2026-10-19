@@ -1,0 +1,40 @@
+{
+  "app": {
+    "title": "Access Control",
+    "loading": "Loading…"
+  },
+  "language": {
+    "label": "Language"
+  },
+  "login": {
+    "title": "Sign in",
+    "subtitle": "Use your administrator account.",
+    "email": "Email",
+    "password": "Password",
+    "submit": "Sign in",
+    "submitting": "Signing in…",
+    "temporaryNotice": "This is a temporary login. It will soon be replaced by the university's single sign-on (SSO)."
+  },
+  "home": {
+    "welcome": "Hello, {{name}}",
+    "signedInAs": "Signed in as {{email}} · {{role}}",
+    "description": "Face recognition and dynamic QR access control system.",
+    "logout": "Sign out"
+  },
+  "roles": {
+    "admin": "Administrator"
+  },
+  "backendStatus": {
+    "checking": "Checking server…",
+    "online": "Server online",
+    "offline": "Server unavailable"
+  },
+  "errors": {
+    "missing_fields": "Enter your email and password.",
+    "invalid_credentials": "Incorrect email or password.",
+    "not_authenticated": "You need to sign in.",
+    "invalid_token": "Your session has expired. Please sign in again.",
+    "network_error": "Could not reach the server. Check your connection and try again.",
+    "unexpected_error": "Something went wrong. Please try again."
+  }
+}

@@ -87,10 +87,45 @@ Open question: where QR codes are **generated** while offline (see
 SSO (Microsoft Entra ID) protects the admin portal on the central server. Terminals do not
 depend on SSO to validate people at the door.
 
+#### Temporary login until SSO is ready
+
+SSO needs an app registration in Entra ID, which may need approval from the university.
+Until then, a temporary email/password login is used. It is built so it can be swapped
+for SSO without touching the rest of the app:
+
+| Layer | Single entry point | Everything else uses... |
+|---|---|---|
+| Backend | `app/auth.py` → `get_current_user` | `Depends(get_current_user)` to get the user |
+| Frontend | `src/auth/AuthContext.jsx` → `useAuth()` | `user`, `login()`, `logout()` |
+
+How it works today:
+
+1. `POST /auth/login` checks the password against a PBKDF2 hash and returns a signed
+   token (HMAC-SHA256, with expiry; see `app/security.py`).
+2. The frontend keeps the token in `sessionStorage` and sends it as
+   `Authorization: Bearer <token>`.
+3. `get_current_user` checks the signature and the expiry, and returns the user.
+
+What changes with SSO:
+
+- `AuthContext.jsx`: `login()` redirects to Microsoft (OpenID Connect, authorization
+  code flow with PKCE) instead of sending a password.
+- `auth.py`: `get_current_user` validates the token issued by Entra ID (signature with
+  Microsoft's public keys, issuer, audience) instead of our own token. The password
+  endpoint and `security.py` token functions are removed.
+- Pages, components and other endpoints do not change, because they only use
+  `useAuth()` and `get_current_user`.
+
+API errors return a stable code in `detail` (for example `invalid_credentials`), never a
+sentence. The frontend translates the code, so the backend stays language-agnostic.
+
 ### 7. Custom multi-language support
 
-UI strings live in translation files inside the repository (`es`, `en`), loaded with
-react-i18next. No external translation APIs.
+UI strings live in translation files inside the repository
+(`frontend/src/locales/es.json`, `en.json`), loaded with react-i18next. No external
+translation APIs. The initial language is the saved choice, then the browser language,
+then Spanish. Adding a language means adding one JSON file with the same keys and
+registering it in `src/i18n.js`.
 
 ## Data model (draft)
 

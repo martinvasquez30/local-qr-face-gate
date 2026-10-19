@@ -1,0 +1,40 @@
+{
+  "app": {
+    "title": "Control de acceso",
+    "loading": "Cargando…"
+  },
+  "language": {
+    "label": "Idioma"
+  },
+  "login": {
+    "title": "Iniciar sesión",
+    "subtitle": "Ingresa con tu cuenta de administrador.",
+    "email": "Correo electrónico",
+    "password": "Contraseña",
+    "submit": "Ingresar",
+    "submitting": "Ingresando…",
+    "temporaryNotice": "Este inicio de sesión es temporal. Pronto se reemplazará por el inicio de sesión institucional (SSO)."
+  },
+  "home": {
+    "welcome": "Hola, {{name}}",
+    "signedInAs": "Sesión iniciada como {{email}} · {{role}}",
+    "description": "Sistema de control de acceso con reconocimiento facial y códigos QR dinámicos.",
+    "logout": "Cerrar sesión"
+  },
+  "roles": {
+    "admin": "Administrador"
+  },
+  "backendStatus": {
+    "checking": "Comprobando el servidor…",
+    "online": "Servidor en línea",
+    "offline": "Servidor no disponible"
+  },
+  "errors": {
+    "missing_fields": "Ingresa tu correo y tu contraseña.",
+    "invalid_credentials": "Correo o contraseña incorrectos.",
+    "not_authenticated": "Debes iniciar sesión.",
+    "invalid_token": "Tu sesión expiró. Inicia sesión de nuevo.",
+    "network_error": "No se pudo conectar con el servidor. Revisa tu conexión e inténtalo de nuevo.",
+    "unexpected_error": "Ocurrió un error inesperado. Inténtalo de nuevo."
+  }
+}

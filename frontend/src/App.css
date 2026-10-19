@@ -1,12 +1,22 @@
 :root {
+  /* Native controls (select, inputs) follow the light/dark theme too. */
+  color-scheme: light dark;
   --color-bg: #f4f6f8;
   --color-surface: #ffffff;
   --color-text: #1b2430;
   --color-muted: #5b6573;
+  --color-border: #d3d9e0;
+  --color-primary: #2357c6;
+  --color-primary-hover: #1b47a5;
+  --color-on-primary: #ffffff;
+  --color-error: #b42318;
+  --color-error-bg: #fdecea;
+  --color-notice-bg: #eef3fb;
   --color-online: #1f9d55;
   --color-offline: #d64545;
   --color-checking: #c48a00;
   --radius: 12px;
+  --radius-small: 8px;
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   color: var(--color-text);
   background: var(--color-bg);
@@ -18,6 +28,13 @@
     --color-surface: #1c222b;
     --color-text: #e8ecf1;
     --color-muted: #9aa4b2;
+    --color-border: #343d4a;
+    --color-primary: #6d9cf5;
+    --color-primary-hover: #8db2f7;
+    --color-on-primary: #0d1420;
+    --color-error: #f97066;
+    --color-error-bg: #3a1d1b;
+    --color-notice-bg: #1f2a3a;
   }
 }
 
@@ -31,8 +48,34 @@ body {
   background: var(--color-bg);
 }
 
-.page {
+/* --- Layout --- */
+
+.app {
   min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 16px;
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.topbar__title {
+  min-width: 0;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.page {
+  flex: 1;
   display: grid;
   place-items: center;
   padding: 16px;
@@ -50,6 +93,7 @@ body {
 .title {
   margin: 0 0 8px;
   font-size: clamp(1.5rem, 4vw, 2rem);
+  overflow-wrap: anywhere;
 }
 
 .subtitle {
@@ -58,8 +102,136 @@ body {
   line-height: 1.5;
 }
 
+.loading {
+  color: var(--color-muted);
+}
+
+/* --- Language switcher --- */
+
+.language-switcher__select {
+  font: inherit;
+  padding: 6px 8px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-small);
+  background: var(--color-surface);
+  color: var(--color-text);
+  cursor: pointer;
+}
+
+/* --- Form --- */
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.field__label {
+  font-weight: 500;
+}
+
+.field__input {
+  width: 100%;
+  /* 16px or more stops iOS from zooming in when the field gets focus. */
+  font: inherit;
+  font-size: 1rem;
+  padding: 10px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-small);
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+.field__input:focus-visible,
+.language-switcher__select:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 1px;
+}
+
+.form__error {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: var(--radius-small);
+  color: var(--color-error);
+  background: var(--color-error-bg);
+  line-height: 1.4;
+}
+
+.notice {
+  margin: 24px 0 0;
+  padding: 12px;
+  border-radius: var(--radius-small);
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--color-muted);
+  background: var(--color-notice-bg);
+}
+
+/* --- Buttons --- */
+
+.button {
+  min-height: 44px; /* Comfortable touch target. */
+  padding: 10px 16px;
+  font: inherit;
+  font-weight: 600;
+  border: 1px solid transparent;
+  border-radius: var(--radius-small);
+  cursor: pointer;
+}
+
+.button:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.button:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+
+.button--primary {
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+}
+
+.button--primary:hover:not(:disabled) {
+  background: var(--color-primary-hover);
+}
+
+.button--secondary {
+  background: transparent;
+  color: var(--color-text);
+  border-color: var(--color-border);
+}
+
+.button--secondary:hover {
+  background: var(--color-bg);
+}
+
+/* --- Home --- */
+
+.home__account {
+  margin: 0 0 24px;
+  overflow-wrap: anywhere;
+}
+
+.home__actions {
+  margin-top: 24px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* --- Backend status --- */
+
 .status {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 8px;
   font-weight: 500;
@@ -89,4 +261,19 @@ body {
   color: var(--color-muted);
   font-weight: 400;
   font-size: 0.875rem;
+}
+
+/* --- Accessibility --- */
+
+/* Hidden on screen but still read by screen readers. */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
 }

@@ -9,6 +9,9 @@ from datetime import datetime, timezone
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app import auth
+from app.config import settings
+
 APP_VERSION = "0.1.0"
 
 app = FastAPI(
@@ -17,13 +20,15 @@ app = FastAPI(
     version=APP_VERSION,
 )
 
-# Allow the local frontend (Vite dev server) to call the API.
+# Allow the frontend (by default the local Vite dev server) to call the API.
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    allow_origins=list(settings.cors_origins),
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.include_router(auth.router)
 
 
 @app.get("/health", tags=["system"])
