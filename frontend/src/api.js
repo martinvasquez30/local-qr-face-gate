@@ -14,6 +14,11 @@ export class ApiError extends Error {
   }
 }
 
+/** Error code to show for any caught error (translation key `errors.<code>`). */
+export function errorCodeOf(error) {
+  return error instanceof ApiError ? error.code : "unexpected_error";
+}
+
 /** Call the backend and return the JSON body, or throw an ApiError. */
 export async function apiRequest(path, { method = "GET", body, token, signal } = {}) {
   const headers = {};

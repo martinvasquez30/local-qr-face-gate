@@ -12,6 +12,7 @@
   --color-error: #b42318;
   --color-error-bg: #fdecea;
   --color-notice-bg: #eef3fb;
+  --color-success-bg: #e7f6ec;
   --color-online: #1f9d55;
   --color-offline: #d64545;
   --color-checking: #c48a00;
@@ -35,6 +36,7 @@
     --color-error: #f97066;
     --color-error-bg: #3a1d1b;
     --color-notice-bg: #1f2a3a;
+    --color-success-bg: #16301f;
   }
 }
 
@@ -58,20 +60,60 @@ body {
 
 .topbar {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
+  gap: 8px 16px;
   padding: 10px 16px;
   background: var(--color-surface);
   border-bottom: 1px solid var(--color-border);
 }
 
 .topbar__title {
+  flex: 1;
   min-width: 0;
   font-weight: 600;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+/* On phones the links go to a second row, under the title and language. */
+.topbar__nav {
+  order: 3;
+  width: 100%;
+  display: flex;
+  gap: 4px;
+}
+
+@media (min-width: 640px) {
+  .topbar__nav {
+    order: 0;
+    width: auto;
+  }
+}
+
+.nav-link {
+  padding: 6px 12px;
+  border-radius: var(--radius-small);
+  color: var(--color-muted);
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.nav-link:hover {
+  color: var(--color-text);
+  background: var(--color-bg);
+}
+
+/* NavLink adds the "active" class to the link of the current page. */
+.nav-link.active {
+  color: var(--color-primary);
+  background: var(--color-notice-bg);
+}
+
+.nav-link:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
 }
 
 .page {
@@ -261,6 +303,190 @@ body {
   color: var(--color-muted);
   font-weight: 400;
   font-size: 0.875rem;
+}
+
+/* --- Users page --- */
+
+.card--wide {
+  max-width: 960px;
+  align-self: start;
+}
+
+.section-title {
+  margin: 0;
+  font-size: 1.125rem;
+}
+
+.users-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px 24px;
+  margin-bottom: 16px;
+}
+
+.users-toolbar__search {
+  flex: 1 1 240px;
+}
+
+.checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  cursor: pointer;
+}
+
+.checkbox input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--color-primary);
+}
+
+.empty {
+  margin: 24px 0;
+  color: var(--color-muted);
+  text-align: center;
+}
+
+.users-table {
+  width: 100%;
+  margin: 8px 0 32px;
+  border-collapse: collapse;
+}
+
+.users-table th,
+.users-table td {
+  padding: 10px 8px;
+  text-align: left;
+  border-bottom: 1px solid var(--color-border);
+  vertical-align: middle;
+}
+
+.users-table th {
+  font-size: 0.875rem;
+  color: var(--color-muted);
+  font-weight: 500;
+}
+
+.users-table__email {
+  overflow-wrap: anywhere;
+}
+
+.users-table__actions {
+  text-align: right;
+}
+
+.users-table__row--inactive td {
+  color: var(--color-muted);
+}
+
+.badge {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-primary);
+  background: var(--color-notice-bg);
+}
+
+.badge--active,
+.badge--inactive {
+  margin-left: 0;
+}
+
+.badge--active {
+  color: var(--color-online);
+  background: var(--color-success-bg);
+}
+
+.badge--inactive {
+  color: var(--color-muted);
+  background: var(--color-bg);
+}
+
+.button--small {
+  min-height: 36px;
+  padding: 6px 12px;
+  font-size: 0.875rem;
+}
+
+.form__success {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: var(--radius-small);
+  color: var(--color-online);
+  background: var(--color-success-bg);
+}
+
+.create-user {
+  padding-top: 24px;
+  border-top: 1px solid var(--color-border);
+}
+
+.create-user__fields {
+  display: grid;
+  gap: 16px;
+}
+
+@media (min-width: 640px) {
+  .create-user__fields {
+    grid-template-columns: 2fr 2fr 1fr;
+  }
+
+  .create-user .button {
+    align-self: flex-start;
+  }
+}
+
+/* Below 640px each row becomes a card, with the column name (data-label)
+   next to each value, so there is never a horizontal scroll. */
+@media (max-width: 639px) {
+  .users-table thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+  }
+
+  .users-table,
+  .users-table tbody,
+  .users-table tr,
+  .users-table td {
+    display: block;
+  }
+
+  .users-table tr {
+    margin-bottom: 12px;
+    padding: 8px 12px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-small);
+  }
+
+  .users-table td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding: 6px 0;
+    border-bottom: none;
+    text-align: right;
+  }
+
+  .users-table td[data-label]::before {
+    content: attr(data-label);
+    flex-shrink: 0;
+    color: var(--color-muted);
+    font-size: 0.875rem;
+    text-align: left;
+  }
+
+  .users-table__actions .button {
+    width: 100%;
+  }
 }
 
 /* --- Accessibility --- */

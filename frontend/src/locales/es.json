@@ -6,6 +6,11 @@
   "language": {
     "label": "Idioma"
   },
+  "nav": {
+    "label": "Navegación principal",
+    "home": "Inicio",
+    "users": "Usuarios"
+  },
   "login": {
     "title": "Iniciar sesión",
     "subtitle": "Ingresa con tu cuenta de administrador.",
@@ -22,7 +27,8 @@
     "logout": "Cerrar sesión"
   },
   "roles": {
-    "admin": "Administrador"
+    "admin": "Administrador",
+    "member": "Miembro"
   },
   "backendStatus": {
     "checking": "Comprobando el servidor…",
@@ -35,6 +41,44 @@
     "not_authenticated": "Debes iniciar sesión.",
     "invalid_token": "Tu sesión expiró. Inicia sesión de nuevo.",
     "network_error": "No se pudo conectar con el servidor. Revisa tu conexión e inténtalo de nuevo.",
-    "unexpected_error": "Ocurrió un error inesperado. Inténtalo de nuevo."
+    "unexpected_error": "Ocurrió un error inesperado. Inténtalo de nuevo.",
+    "missing_user_fields": "Ingresa el nombre y el correo.",
+    "email_already_exists": "Ya existe un usuario con ese correo.",
+    "user_not_found": "El usuario no existe.",
+    "cannot_modify_self": "No puedes desactivarte ni quitarte el rol de administrador.",
+    "forbidden": "No tienes permiso para hacer esto.",
+    "inactive_user": "Tu cuenta está desactivada.",
+    "invalid_input": "Revisa los datos ingresados: algún campo no es válido."
+  },
+  "users": {
+    "title": "Usuarios",
+    "subtitle": "Personas registradas en el sistema. Los usuarios se desactivan, nunca se eliminan.",
+    "search": "Buscar por nombre o correo",
+    "showInactive": "Mostrar usuarios inactivos",
+    "loading": "Cargando usuarios…",
+    "empty": "Aún no hay usuarios.",
+    "noMatches": "Ningún usuario coincide con la búsqueda.",
+    "you": "Tú",
+    "fields": {
+      "name": "Nombre",
+      "email": "Correo electrónico",
+      "role": "Rol",
+      "status": "Estado",
+      "actions": "Acciones"
+    },
+    "status": {
+      "active": "Activo",
+      "inactive": "Inactivo"
+    },
+    "actions": {
+      "deactivate": "Desactivar",
+      "reactivate": "Reactivar"
+    },
+    "create": {
+      "title": "Agregar usuario",
+      "submit": "Agregar",
+      "saving": "Guardando…",
+      "success": "Se agregó a {{name}}."
+    }
   }
 }

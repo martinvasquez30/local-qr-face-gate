@@ -37,6 +37,8 @@ const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
+  // Kept in state as well, so pages can send it with API calls.
+  const [token, setToken] = useState(readToken);
   // True while a saved session is being checked after a page reload.
   const [isRestoring, setIsRestoring] = useState(() => readToken() !== null);
 
@@ -53,7 +55,10 @@ export function AuthProvider({ children }) {
         if (error.name === "AbortError") return;
         // Forget the token only if the server rejected it (expired, or signed
         // with an old key). A network error does not mean the token is bad.
-        if (error.status === 401) clearToken();
+        if (error.status === 401) {
+          clearToken();
+          setToken(null);
+        }
       })
       .finally(() => {
         if (!controller.signal.aborted) setIsRestoring(false);
@@ -68,18 +73,20 @@ export function AuthProvider({ children }) {
       body: { email, password },
     });
     saveToken(data.access_token);
+    setToken(data.access_token);
     setUser(data.user);
   }, []);
 
   // The token cannot be revoked on the server yet; signing out forgets it.
   const logout = useCallback(() => {
     clearToken();
+    setToken(null);
     setUser(null);
   }, []);
 
   const value = useMemo(
-    () => ({ user, isRestoring, login, logout }),
-    [user, isRestoring, login, logout]
+    () => ({ user, token, isRestoring, login, logout }),
+    [user, token, isRestoring, login, logout]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

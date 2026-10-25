@@ -6,6 +6,11 @@
   "language": {
     "label": "Language"
   },
+  "nav": {
+    "label": "Main navigation",
+    "home": "Home",
+    "users": "Users"
+  },
   "login": {
     "title": "Sign in",
     "subtitle": "Use your administrator account.",
@@ -22,7 +27,8 @@
     "logout": "Sign out"
   },
   "roles": {
-    "admin": "Administrator"
+    "admin": "Administrator",
+    "member": "Member"
   },
   "backendStatus": {
     "checking": "Checking server…",
@@ -35,6 +41,44 @@
     "not_authenticated": "You need to sign in.",
     "invalid_token": "Your session has expired. Please sign in again.",
     "network_error": "Could not reach the server. Check your connection and try again.",
-    "unexpected_error": "Something went wrong. Please try again."
+    "unexpected_error": "Something went wrong. Please try again.",
+    "missing_user_fields": "Enter a name and an email.",
+    "email_already_exists": "A user with this email already exists.",
+    "user_not_found": "This user does not exist.",
+    "cannot_modify_self": "You cannot deactivate yourself or remove your own admin role.",
+    "forbidden": "You do not have permission to do this.",
+    "inactive_user": "Your account has been deactivated.",
+    "invalid_input": "Check the data you entered: some field is not valid."
+  },
+  "users": {
+    "title": "Users",
+    "subtitle": "People registered in the system. Users are deactivated, never deleted.",
+    "search": "Search by name or email",
+    "showInactive": "Show inactive users",
+    "loading": "Loading users…",
+    "empty": "No users yet.",
+    "noMatches": "No users match your search.",
+    "you": "You",
+    "fields": {
+      "name": "Name",
+      "email": "Email",
+      "role": "Role",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "status": {
+      "active": "Active",
+      "inactive": "Inactive"
+    },
+    "actions": {
+      "deactivate": "Deactivate",
+      "reactivate": "Reactivate"
+    },
+    "create": {
+      "title": "Add user",
+      "submit": "Add",
+      "saving": "Saving…",
+      "success": "{{name}} was added."
+    }
   }
 }

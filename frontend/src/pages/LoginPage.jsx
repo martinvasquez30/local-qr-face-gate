@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ApiError } from "../api.js";
+import { errorCodeOf } from "../api.js";
 import { useAuth } from "../auth/AuthContext.jsx";
+import ErrorMessage from "../components/ErrorMessage.jsx";
 
 function LoginPage() {
   const { t } = useTranslation();
@@ -25,7 +26,7 @@ function LoginPage() {
     try {
       await login(email, password);
     } catch (error) {
-      setErrorCode(error instanceof ApiError ? error.code : "unexpected_error");
+      setErrorCode(errorCodeOf(error));
     } finally {
       setIsSubmitting(false);
     }
@@ -63,11 +64,7 @@ function LoginPage() {
           />
         </label>
 
-        {errorCode && (
-          <p className="form__error" role="alert">
-            {t(`errors.${errorCode}`, { defaultValue: t("errors.unexpected_error") })}
-          </p>
-        )}
+        <ErrorMessage code={errorCode} />
 
         <button className="button button--primary" type="submit" disabled={isSubmitting}>
           {isSubmitting ? t("login.submitting") : t("login.submit")}
