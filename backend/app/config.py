@@ -17,6 +17,8 @@ class Settings:
     token_ttl_seconds: int
     # Browser origins allowed to call the API (CORS).
     cors_origins: tuple[str, ...]
+    # SQLAlchemy database URL. SQLite in development; PostgreSQL later.
+    database_url: str
 
 
 def load_settings() -> Settings:
@@ -30,6 +32,8 @@ def load_settings() -> Settings:
         cors_origins=tuple(
             origin.strip() for origin in cors_origins.split(",") if origin.strip()
         ),
+        # Relative to the folder the server is started from (backend/).
+        database_url=os.environ.get("DATABASE_URL", "sqlite:///./data/app.db"),
     )
 
 
