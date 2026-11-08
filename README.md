@@ -100,14 +100,17 @@ screen shows whether the backend is reachable.
 
 ### Demo login
 
-SSO is not set up yet, so there is a **temporary** email/password login with one demo
-user kept in memory:
+SSO is not set up yet, so there is a **temporary** email/password login. The first time
+the backend starts with an empty database, it creates this demo admin:
 
 | Email | Password |
 |---|---|
 | `admin@example.com` | `admin123` |
 
-It will be replaced by SSO (see [`docs/architecture.md`](docs/architecture.md#temporary-login-until-sso-is-ready)).
+Users are stored in a SQLite file (`backend/data/app.db`, not committed). There are no
+migrations yet: after changing a model, delete that file and restart the backend.
+
+The temporary login will be replaced by SSO (see [`docs/architecture.md`](docs/architecture.md#temporary-login-until-sso-is-ready)).
 
 ### Environment variables
 
@@ -118,6 +121,7 @@ All variables are optional in development.
 | `TOKEN_SECRET` | backend | random on each start | Key that signs access tokens. Without it, restarting the backend logs everyone out. |
 | `TOKEN_TTL_SECONDS` | backend | `3600` | How long a login lasts, in seconds. |
 | `CORS_ORIGINS` | backend | `http://localhost:5173` | Comma-separated list of frontend origins allowed to call the API. |
+| `DATABASE_URL` | backend | `sqlite:///./data/app.db` | Database location (SQLAlchemy URL), relative to the folder the backend is started from. |
 | `VITE_API_BASE_URL` | frontend | `http://localhost:8000` | Backend URL. Copy `frontend/.env.example` to `frontend/.env` to change it. |
 
 To keep sessions across backend restarts, set a fixed secret before starting the server:
@@ -154,7 +158,7 @@ See [`ml/README.md`](ml/README.md).
 - [x] Temporary email/password login (stand-in until SSO)
 - [ ] SSO login (Microsoft Entra ID)
 - [x] Multi-language support (Spanish / English)
-- [ ] User management (admin portal)
+- [x] User management (admin portal)
 - [ ] ML: evaluate candidate models (FAR / FRR, ROC) and choose a threshold
 - [ ] ML: export the chosen model to ONNX and run it in the browser (parity check)
 - [ ] Face enrollment (embeddings only)
@@ -174,6 +178,8 @@ has been reviewed and studied by the author.
 |---|---|---|
 | 2026-10-11 | Claude (Anthropic) | Initial project scaffold, README and architecture notes |
 | 2026-10-18 | Claude Code (Anthropic) | Temporary login (backend and frontend), password hashing and signed tokens, i18n setup with Spanish/English files, styles, pytest tests and week 2 docs |
+| 2026-10-25 | Claude Code (Anthropic) | Week 3 plan, SQLite database layer and users API (backend), users management page with routing (frontend), translations, styles and pytest tests |
+| 2026-11-08 | Claude Code (Anthropic) | Architecture and complexity review, week 3 progress notes and documentation updates |
 
 ### Third-party libraries
 
@@ -183,10 +189,13 @@ has been reviewed and studied by the author.
 | [Uvicorn](https://www.uvicorn.org/) | ASGI server that runs the backend | BSD-3-Clause |
 | [pytest](https://pytest.org/) | Backend tests | MIT |
 | [HTTPX](https://www.python-httpx.org/) | HTTP client used by FastAPI's `TestClient` | BSD-3-Clause |
+| [SQLAlchemy](https://www.sqlalchemy.org/) | Database access (tables as Python classes) | MIT |
+| [email-validator](https://github.com/JoshData/python-email-validator) | Email format check used by Pydantic's `EmailStr` | Unlicense |
 | [React](https://react.dev/) | Frontend UI | MIT |
 | [Vite](https://vitejs.dev/) and `@vitejs/plugin-react` | Frontend dev server and build | MIT |
 | [i18next](https://www.i18next.com/) | Translation engine (with our own translation files) | MIT |
 | [react-i18next](https://react.i18next.com/) | React bindings for i18next (`useTranslation`) | MIT |
+| [React Router](https://reactrouter.com/) (`react-router-dom`) | Page routes (`/`, `/users`) and navigation links | MIT |
 
 ## Author
 

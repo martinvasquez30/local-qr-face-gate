@@ -51,8 +51,9 @@ Full design in `docs/architecture.md`. In short:
   ONNX embedding model runs in the browser with `onnxruntime-web`, data lives in IndexedDB
   (Dexie.js) with embeddings encrypted through Web Crypto. QR codes are signed with Ed25519
   and validated offline with the public key.
-- **Central server**: FastAPI + PostgreSQL. SSO, user management, reports, and sync with
-  terminals. No database yet.
+- **Central server**: FastAPI + SQLAlchemy, with SQLite in development (PostgreSQL was the
+  original target). SSO, user management, reports, and sync with terminals. Today it holds
+  the `users` table and the temporary login.
 - **ML pipeline** (`ml/`): Python. Evaluate pre-trained face models on LFW, measure
   FAR/FRR, pick the similarity threshold with data, export to ONNX, and check that Python
   and the browser produce the same embeddings (parity check).
@@ -63,25 +64,30 @@ Full design in `docs/architecture.md`. In short:
 
 ```
 backend/
-  app/main.py          FastAPI app, CORS, router registration, /health
-  app/auth.py          Temporary login: /auth/login, /auth/me, get_current_user
+  app/main.py          FastAPI app, CORS, routers, startup (init_db), invalid_input handler, /health
+  app/auth.py          Temporary login: /auth/login, /auth/me, get_current_user, require_admin
   app/security.py      PBKDF2 password hashing and HMAC-signed tokens (stdlib only)
   app/config.py        Settings from environment variables, with dev defaults
-  tests/               pytest
+  app/database.py      SQLAlchemy engine, get_db (one session per request), init_db + demo admin
+  app/models.py        Database tables (User)
+  app/schemas.py       Pydantic shapes the API receives and returns (UserOut, UserCreate, UserUpdate)
+  app/users.py         Admin-only /users endpoints (list, create, get, update)
+  tests/               pytest; conftest.py gives each test an in-memory SQLite database
 frontend/
-  src/main.jsx         Entry point: loads i18n, wraps the app in AuthProvider
-  src/App.jsx          Layout and screen selection (loading / login / home)
+  src/main.jsx         Entry point: loads i18n, wraps the app in BrowserRouter and AuthProvider
+  src/App.jsx          Layout, screen selection (loading / login) and routes (/, /users)
   src/i18n.js          i18next setup and supported languages
   src/locales/         es.json, en.json (own translation files)
   src/api.js           fetch wrapper; errors become ApiError with a stable code
   src/auth/            AuthContext and useAuth()
-  src/components/      LanguageSwitcher, BackendStatus
-  src/pages/           LoginPage, HomePage
+  src/components/      LanguageSwitcher, BackendStatus, NavBar, ErrorMessage
+  src/pages/           LoginPage, HomePage, UsersPage
+  src/users/           CreateUserForm and usersApi (calls to /users)
 ml/                    Model evaluation and export (README describes the pipeline)
 docs/
   architecture.md      Design and decisions
   questions-for-po.md  Open questions for the Product Owner
-  progress/            One file per week describing what changed
+  progress/            One file per week describing what changed (plus week plans)
 ```
 
 ## Commands
@@ -134,12 +140,12 @@ Development login: `admin@example.com` / `admin123`.
 |---|---|---|---|
 | 1 | Oct 5–11 | Project scaffold: FastAPI health check, React + Vite, docs, ML plan | — |
 | 2 | Oct 12–18 | Temporary login, Spanish/English language switcher | `docs/progress/week-02.md` |
+| 3 | Oct 19–25 | SQLite database, admin-only users API, users management page with routing | `docs/progress/week-03.md` |
 
 ### Next steps
 
 1. SSO with Microsoft Entra ID, replacing the temporary login.
 2. First ML notebook: evaluate a pre-trained model on LFW (FAR/FRR, ROC).
-3. User management in the admin portal (requires a database).
 
 ### Open questions
 

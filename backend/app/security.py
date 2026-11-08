@@ -68,7 +68,7 @@ def _pbkdf2(password: str, salt: bytes, iterations: int) -> bytes:
 def create_token(
     subject: str, secret: str, ttl_seconds: int, now: float | None = None
 ) -> str:
-    """Create a signed token for ``subject`` (the user's email).
+    """Create a signed token for ``subject`` (the user's id, as text).
 
     Format: ``<payload>.<signature>``, both base64url encoded. The payload is
     readable by anyone; the signature proves the server created it.
