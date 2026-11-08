@@ -8,43 +8,45 @@
 SSO (Microsoft Entra ID) needs an internet connection, but enrollment and QR validation
 must work offline.
 
-- **Current plan:** SSO only protects the admin portal on the central server. Access
-  point terminals do not depend on SSO to validate people at the door.
+- **Current plan:** SSO only protects the admin portal. The access point does not depend
+  on SSO to validate people at the door; its endpoints use a terminal key instead.
 - **Question:** Is SSO for the admin portal enough to meet the SSO requirement?
 - **Answer:** _pending_
 
 ## 2. Meaning of "local, with no internet connection"
 
-- **Question:** Does it mean "no cloud services" (terminals may talk to the central
-  server over the local network), or "no network at all" (each terminal is fully
-  standalone)?
-- **Current plan:** No cloud services. Terminals work alone when the network is down and
-  sync with the central server when it is back.
+- **Question:** Does it mean "no cloud services" (the access point may talk to a server on
+  the same machine or the local network), or "no network at all" (each access point is
+  fully standalone)?
+- **Current plan (decided on 2026-11-08):** No cloud services. One local server with its
+  database serves the admin portal, enrollment and the access point, so everything keeps
+  working when the internet is down. See [`architecture.md`](architecture.md), decision 1.
+  If the answer is "no network at all", the design moves towards the standalone terminals
+  described in "Future evolution".
 - **Answer:** _pending_
 
 ## 3. Where QR codes are generated while offline
 
-QR codes are signed with Ed25519 and terminals validate them with the public key (see
-[`architecture.md`](architecture.md)). Someone has to hold the private key to create them.
-
-- **Options:** (a) the central server only, which needs a connection; (b) a device on the
-  local network that holds the key; (c) the user's phone with a key issued per user.
-- **Question:** Which scenario should work with no connection: getting a new QR code, or
-  only validating one?
+- **Current plan (decided on 2026-11-08):** The local server creates and checks the QR
+  codes (signed with HMAC), so both work without internet. An admin issues them from the
+  portal, for example for a visitor or for someone whose face is not recognized. See
+  [`architecture.md`](architecture.md), decision 5.
+- **Question:** Is it enough that an admin issues the QR codes, or must people be able to
+  get their own QR code without an admin?
 - **Answer:** _pending_
 
 ## 4. Who enrolls users
 
-- **Question:** Do administrators enroll users at a terminal, or can users enroll
-  themselves? Is explicit consent required before capturing biometric data?
+- **Question:** Do administrators enroll users, or can users enroll themselves? Is
+  explicit consent required before capturing biometric data?
 - **Current plan:** Only administrators enroll users, and enrollment asks for consent.
 - **Answer:** _pending_
 
 ## 5. Entries and exits
 
-- **Question:** Must the system record exits as well as entries? If so, is each terminal
-  fixed to one direction, or does the person choose?
-- **Current plan:** Each terminal is configured as entry or exit.
+- **Question:** Must the system record exits as well as entries? If so, is each access
+  point fixed to one direction, or does the person choose?
+- **Current plan:** Each access point is configured as entry or exit.
 - **Answer:** _pending_
 
 ## 6. QR code validity
@@ -55,9 +57,9 @@ QR codes are signed with Ed25519 and terminals validate them with the public key
 
 ## 7. Data retention
 
-- **Question:** How long should access events and face embeddings be kept? What happens
-  to a user's embeddings when the user is deactivated?
-- **Current plan:** Delete embeddings when the user is deactivated; keep access events.
+- **Question:** How long should access events and face descriptors be kept? What happens
+  to a user's descriptors when the user is deactivated?
+- **Current plan:** Delete descriptors when the user is deactivated; keep access events.
 - **Answer:** _pending_
 
 ## 8. Reports

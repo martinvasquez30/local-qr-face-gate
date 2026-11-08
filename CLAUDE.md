@@ -47,18 +47,22 @@ Access control system combining face recognition and dynamic QR codes.
 
 Full design in `docs/architecture.md`. In short:
 
-- **Access point terminal**: React PWA that works offline. MediaPipe detects the face, an
-  ONNX embedding model runs in the browser with `onnxruntime-web`, data lives in IndexedDB
-  (Dexie.js) with embeddings encrypted through Web Crypto. QR codes are signed with Ed25519
-  and validated offline with the public key.
-- **Central server**: FastAPI + SQLAlchemy, with SQLite in development (PostgreSQL was the
-  original target). SSO, user management, reports, and sync with terminals. Today it holds
-  the `users` table and the temporary login.
-- **ML pipeline** (`ml/`): Python. Evaluate pre-trained face models on LFW, measure
-  FAR/FRR, pick the similarity threshold with data, export to ONNX, and check that Python
-  and the browser produce the same embeddings (parity check).
-- **Sync**: one direction per data type. Users and embeddings go server → terminal;
-  access events go terminal → server (append-only, UUID generated at the terminal).
+- **Local monolith, no cloud**: one FastAPI server with SQLite (through SQLAlchemy) on the
+  same machine or local network. One React frontend with three views: admin portal, face
+  enrollment and access point (kiosk). No sync, no PWA, no PostgreSQL.
+- **Faces**: the browser computes a face descriptor with a pre-trained model served
+  locally (candidate `@vladmandic/face-api`); photos never leave the browser. The server
+  compares descriptors (Euclidean distance) against a threshold.
+- **QR codes**: HMAC-signed tokens `{user_id, exp, nonce}` made with
+  `create_token`/`verify_token`, with their **own secret** (never the login token secret).
+  Issued by an admin, valid 30–60 s, single use through `used_qr_nonces`.
+- **Access log**: every attempt goes to `access_events`; reports filter by date and user.
+  Access point endpoints use a terminal key, not SSO.
+- **SSO**: Authlib in the backend; after Microsoft confirms the email, the backend issues
+  its own token, so `get_current_user` does not change.
+- **ML** (`ml/`): only threshold calibration (FAR/FRR) with test captures.
+- The original distributed design is kept in `docs/architecture.md` under
+  "Future evolution". Do not build it unless asked.
 
 ## Repository layout
 
@@ -83,7 +87,7 @@ frontend/
   src/components/      LanguageSwitcher, BackendStatus, NavBar, ErrorMessage
   src/pages/           LoginPage, HomePage, UsersPage
   src/users/           CreateUserForm and usersApi (calls to /users)
-ml/                    Model evaluation and export (README describes the pipeline)
+ml/                    Face match threshold calibration (README describes the steps)
 docs/
   architecture.md      Design and decisions
   questions-for-po.md  Open questions for the Product Owner
@@ -144,14 +148,17 @@ Development login: `admin@example.com` / `admin123`.
 
 ### Next steps
 
-1. SSO with Microsoft Entra ID, replacing the temporary login.
-2. First ML notebook: evaluate a pre-trained model on LFW (FAR/FRR, ROC).
+1. `access_events` table and an admin-only list endpoint filtered by date and user.
+2. Dynamic QR codes: issue (admin) and check at the access point (single use).
+3. Face enrollment and verification at the access point, with QR fallback.
+4. SSO with Microsoft Entra ID through Authlib (ask for the app registration early).
+5. Reports page, threshold calibration, full check with the internet disconnected.
 
 ### Open questions
 
 See `docs/questions-for-po.md`. The ones that most affect the design:
 
-- SSO needs internet, but enrollment and QR validation must work offline. Plan: SSO only
-  for the admin portal.
-- Does "local, no internet" mean no cloud, or no network at all?
-- Where are QR codes generated while offline?
+- Does "local, no internet" mean no cloud (current plan: one local server), or no network
+  at all?
+- Is SSO for the admin portal enough to meet the SSO requirement?
+- Is it enough that admins issue the QR codes?

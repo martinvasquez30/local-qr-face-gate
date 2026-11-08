@@ -27,12 +27,14 @@ support (no external translation APIs).
 
 ## Architecture at a glance
 
-- **Access point terminals** run in the browser as a PWA and work **offline**: they detect
-  and recognize faces locally and validate signed QR codes.
-- A **central server** manages users, SSO and reports, and receives the access log when
-  terminals are back online.
-- The **face recognition model** is evaluated and calibrated in **Python**, then exported to
-  ONNX and run in the terminal's browser.
+- Everything runs on **one machine or local network, with no cloud services**: a FastAPI
+  server with a SQLite database, and a React frontend with three views (admin portal, face
+  enrollment and access point).
+- The **browser** computes a face descriptor with a locally served model; photos never
+  leave it. The **server** compares descriptors, issues and checks signed QR codes, and
+  logs every access attempt.
+- Internet is only needed to sign in with **SSO**. The match threshold is calibrated with
+  test data in **Python**.
 
 See [`docs/architecture.md`](docs/architecture.md) for the full design.
 
@@ -40,26 +42,25 @@ See [`docs/architecture.md`](docs/architecture.md) for the full design.
 
 | Layer | Technology | Why |
 |---|---|---|
-| Terminal & admin UI | React · Vite · PWA | Responsive, installable, works offline |
-| Face detection | MediaPipe Face Detector (browser) | Fast face detection and landmarks for alignment |
-| Face recognition | Pre-trained embedding model · ONNX · onnxruntime-web | Runs locally in the browser, no cloud |
-| ML evaluation | Python · scikit-learn · ONNX | Model selection and threshold calibration with data |
-| Terminal storage | IndexedDB (Dexie.js) · Web Crypto | Offline storage with encrypted biometric data |
-| Central server | Python · FastAPI | SSO, user management, sync and reports |
-| Central database | PostgreSQL | Relational audit log from all terminals |
+| UI (admin portal, enrollment, access point) | React · Vite · React Router | Responsive single-page app |
+| Face detection and descriptor | Pre-trained model in the browser (candidate: `@vladmandic/face-api`), files served locally | Runs locally, photos never leave the browser |
+| Threshold calibration | Python · scikit-learn · Jupyter | Match threshold chosen with data (FAR / FRR) |
+| Server | Python · FastAPI | Users, face matching, QR codes, access log and reports |
+| Database | SQLite through SQLAlchemy | No setup, one local file |
+| QR codes | HMAC-signed tokens (Python standard library) | Created and checked by the local server, no internet needed |
 | i18n | react-i18next with own translation files | Custom multi-language, no external APIs |
-| SSO | Microsoft Entra ID (OpenID Connect) | University accounts already use Microsoft 365 |
+| SSO | Microsoft Entra ID (OpenID Connect) through Authlib | University accounts already use Microsoft 365 |
 
 ## Project structure
 
 ```
 access-control/
-├── backend/          Central server (FastAPI)
+├── backend/          Local server (FastAPI)
 │   ├── app/
 │   └── tests/
-├── frontend/         Terminal and admin UI (React + Vite)
+├── frontend/         Admin portal, enrollment and access point UI (React + Vite)
 │   └── src/
-├── ml/               Model evaluation, threshold selection and ONNX export (Python)
+├── ml/               Face match threshold calibration (Python)
 │   ├── notebooks/
 │   ├── src/
 │   └── reports/
@@ -156,18 +157,17 @@ See [`ml/README.md`](ml/README.md).
 
 - [x] Project scaffold, documentation and health check
 - [x] Temporary email/password login (stand-in until SSO)
-- [ ] SSO login (Microsoft Entra ID)
 - [x] Multi-language support (Spanish / English)
 - [x] User management (admin portal)
-- [ ] ML: evaluate candidate models (FAR / FRR, ROC) and choose a threshold
-- [ ] ML: export the chosen model to ONNX and run it in the browser (parity check)
-- [ ] Face enrollment (embeddings only)
-- [ ] Face verification at the terminal
-- [ ] Signed dynamic QR codes (offline validation)
-- [ ] PWA: offline terminal with encrypted IndexedDB storage
-- [ ] Sync: users to terminals, access events to the server
-- [ ] Access log, audit trail and reports
-- [ ] Liveness detection (anti-spoofing)
+- [x] Simplified architecture: one local server, no cloud services
+- [ ] Access log (every attempt) and reports by date and user
+- [ ] Dynamic QR codes (HMAC-signed, single use)
+- [ ] Face enrollment (descriptors only, no photos)
+- [ ] Face verification at the access point, with QR fallback
+- [ ] Match threshold calibrated with test captures (FAR / FRR)
+- [ ] SSO login (Microsoft Entra ID)
+- [ ] Full flow checked with the internet disconnected
+- [ ] Liveness detection (anti-spoofing), stretch goal
 
 ## Credits and AI usage
 
@@ -179,7 +179,7 @@ has been reviewed and studied by the author.
 | 2026-10-11 | Claude (Anthropic) | Initial project scaffold, README and architecture notes |
 | 2026-10-18 | Claude Code (Anthropic) | Temporary login (backend and frontend), password hashing and signed tokens, i18n setup with Spanish/English files, styles, pytest tests and week 2 docs |
 | 2026-10-25 | Claude Code (Anthropic) | Planning and implementation of the SQLite database layer and users API (backend), the users management page with routing (frontend), translations, styles and pytest tests |
-| 2026-11-08 | Claude Code (Anthropic) | Architecture and complexity review, week 3 progress notes and documentation updates |
+| 2026-11-08 | Claude Code (Anthropic) | Architecture and complexity review, simplified architecture docs, week 3 progress notes and documentation updates |
 
 ### Third-party libraries
 
