@@ -1,14 +1,15 @@
-"""Shapes of the user data the API receives and returns (Pydantic).
+"""Shapes of the data the API receives and returns (Pydantic).
 
-They are separate from the database model on purpose: the API never returns
+They are separate from the database models on purpose: the API never returns
 fields like `password_hash`, and clients can only send the fields listed here.
 """
 
+from datetime import datetime
 from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, EmailStr, StringConstraints, field_validator
 
-from app.models import normalize_email
+from app.models import as_utc, normalize_email
 
 Role = Literal["admin", "member"]
 
@@ -47,3 +48,24 @@ class UserUpdate(BaseModel):
     name: Name | None = None
     role: Role | None = None
     is_active: bool | None = None
+
+
+class AccessEventOut(BaseModel):
+    """Public view of an access event."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    user_id: int | None
+    method: str
+    result: str
+    direction: str
+    distance: float | None
+    created_at: datetime
+
+    @field_validator("created_at")
+    @classmethod
+    def _in_utc(cls, value: datetime) -> datetime:
+        # SQLite returns the date without a time zone. Marking it as UTC makes the
+        # JSON end in "Z", so the browser shows it in the viewer's local time.
+        return as_utc(value)

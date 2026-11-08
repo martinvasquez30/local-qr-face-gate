@@ -35,7 +35,8 @@ the **access point** (kiosk). Internet is only needed to sign in with SSO.
 | Users table, admin-only users API and users page | Done (week 3) |
 | Temporary email/password login | Done (week 2), replaced by SSO later |
 | Spanish / English UI | Done (week 2) |
-| Access log and reports | Planned |
+| Access log: `access_events` table and admin list with filters | Done (week 5) |
+| Writing events at the access point, reports page | Planned |
 | Dynamic QR codes | Planned |
 | Face enrollment and verification | Planned |
 | SSO | Planned |
@@ -119,6 +120,12 @@ The access point records every attempt, accepted or rejected, in `access_events`
 filter these events by date and user. Each access point is set up as an entry or an exit
 (question 5).
 
+`GET /access-events` (admins only) lists the events, newest first, with three optional
+filters: `start` (included), `end` (not included) and `user_id`. `start` and `end` are
+exact moments with a time zone: the browser turns a local day into the moment it starts
+and ends, and the server compares them in UTC, which is how dates are stored. The API
+returns dates in UTC (ending in `Z`) so the browser shows them in local time.
+
 The access point's endpoints are protected with a terminal key from the server settings,
 not with SSO, so the kiosk keeps working without internet.
 
@@ -177,7 +184,7 @@ SQLite in development, through SQLAlchemy.
 |---|---|---|
 | `users` | id, email, name, role (`admin` / `member`), is_active, password_hash (admins only), created_at, updated_at | Done |
 | `face_templates` | id, user_id, descriptor (list of numbers), created_at | Planned |
-| `access_events` | id, user_id (empty if nobody was recognized), method (`face` / `qr`), result (`granted` / `denied`), direction (`in` / `out`), distance (face only), created_at | Planned |
+| `access_events` | id, user_id (empty if nobody was recognized), method (`face` / `qr`), result (`granted` / `denied`), direction (`in` / `out`), distance (face only), created_at | Done |
 | `used_qr_nonces` | nonce (unique), used_at | Planned |
 
 Users are deactivated, never deleted, because access events point to them.

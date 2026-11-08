@@ -77,6 +77,11 @@ def admin_token(client: TestClient) -> str:
 
 
 @pytest.fixture
+def admin_headers(admin_token: str) -> dict:
+    return auth_header(admin_token)
+
+
+@pytest.fixture
 def member(db: Session) -> User:
     user = User(name="Member", email="member@example.com", role=ROLE_MEMBER)
     db.add(user)

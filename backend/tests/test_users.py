@@ -3,11 +3,6 @@ import pytest
 from tests.conftest import ADMIN_EMAIL, auth_header, token_for
 
 
-@pytest.fixture
-def admin_headers(admin_token):
-    return auth_header(admin_token)
-
-
 def create(client, headers, name="Ana", email="ana@example.com", role="member"):
     return client.post(
         "/users", json={"name": name, "email": email, "role": role}, headers=headers

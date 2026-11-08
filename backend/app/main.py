@@ -13,7 +13,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from app import auth, users
+from app import access_events, auth, users
 from app.config import settings
 from app.database import init_db
 
@@ -45,6 +45,7 @@ app.add_middleware(
 
 app.include_router(auth.router)
 app.include_router(users.router)
+app.include_router(access_events.router)
 
 
 @app.exception_handler(RequestValidationError)

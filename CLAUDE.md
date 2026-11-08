@@ -73,9 +73,10 @@ backend/
   app/security.py      PBKDF2 password hashing and HMAC-signed tokens (stdlib only)
   app/config.py        Settings from environment variables, with dev defaults
   app/database.py      SQLAlchemy engine, get_db (one session per request), init_db + demo admin
-  app/models.py        Database tables (User)
-  app/schemas.py       Pydantic shapes the API receives and returns (UserOut, UserCreate, UserUpdate)
+  app/models.py        Database tables (User, AccessEvent), allowed values, as_utc()
+  app/schemas.py       Pydantic shapes the API receives and returns (users, access events)
   app/users.py         Admin-only /users endpoints (list, create, get, update)
+  app/access_events.py Admin-only GET /access-events (filters: start, end, user_id)
   tests/               pytest; conftest.py gives each test an in-memory SQLite database
 frontend/
   src/main.jsx         Entry point: loads i18n, wraps the app in BrowserRouter and AuthProvider
@@ -148,11 +149,12 @@ Development login: `admin@example.com` / `admin123`.
 
 ### Next steps
 
-1. `access_events` table and an admin-only list endpoint filtered by date and user.
-2. Dynamic QR codes: issue (admin) and check at the access point (single use).
+1. Dynamic QR codes: issue (admin) and check at the access point (single use); each
+   check writes an `access_events` row.
+2. History / reports page in the frontend on top of `GET /access-events`.
 3. Face enrollment and verification at the access point, with QR fallback.
 4. SSO with Microsoft Entra ID through Authlib (ask for the app registration early).
-5. Reports page, threshold calibration, full check with the internet disconnected.
+5. Threshold calibration, full check with the internet disconnected.
 
 ### Open questions
 
