@@ -9,8 +9,6 @@ Replace the in-memory demo user with a real `users` table and add an admin page 
 create, deactivate and reactivate users. Face enrollment will attach face templates to
 these users, and access events will reference them.
 
-The full plan is in [`week-03-plan.md`](week-03-plan.md).
-
 ## Changes
 
 ### Backend
@@ -70,9 +68,8 @@ Changes to the auth endpoints:
 
 ### Docs
 
-- `docs/progress/week-03-plan.md`: implementation plan for the week.
-- The rest of the docs (this file, `README.md` and `CLAUDE.md`) were updated for week 3 on
-  Nov 8, together with a fix to the `create_token` docstring in `app/security.py`, which
+- This file, `README.md` and `CLAUDE.md` were updated for week 3 on Nov 8, together with a
+  fix to the `create_token` docstring in `app/security.py`, which
   still said the token stores the email.
 
 ## Design decisions

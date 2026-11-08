@@ -87,7 +87,7 @@ ml/                    Model evaluation and export (README describes the pipelin
 docs/
   architecture.md      Design and decisions
   questions-for-po.md  Open questions for the Product Owner
-  progress/            One file per week describing what changed (plus week plans)
+  progress/            One file per week describing what changed
 ```
 
 ## Commands
