@@ -256,6 +256,43 @@ body {
   background: var(--color-bg);
 }
 
+/* A link that looks like a button (used for the SSO sign-in). */
+a.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+
+.button--block {
+  width: 100%;
+}
+
+/* --- Login --- */
+
+.sso {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* A line with a label in the middle, between SSO and the password form. */
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 24px 0 16px;
+  font-size: 0.875rem;
+  color: var(--color-muted);
+}
+
+.divider::before,
+.divider::after {
+  content: "";
+  flex: 1;
+  border-top: 1px solid var(--color-border);
+}
+
 /* --- Home --- */
 
 .home__account {

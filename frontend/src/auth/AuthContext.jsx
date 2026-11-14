@@ -2,8 +2,9 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState } 
 import { apiRequest } from "../api.js";
 
 // This file is the only place in the frontend that knows how login works.
-// Components use useAuth(); when SSO replaces the temporary login, only this
-// file changes.
+// There are two ways in: SSO (the backend sends the browser back with a token
+// in the URL) and the temporary password login. Components use useAuth() and
+// do not care which one was used.
 
 const TOKEN_STORAGE_KEY = "accessToken";
 
@@ -33,10 +34,32 @@ function clearToken() {
   }
 }
 
+// After SSO, the backend sends the browser to "/#token=..." or "/#error=<code>".
+// This runs once, when the page loads and before React renders, so the token
+// is already saved when the session is restored below (the same path as a
+// page reload). Returns the error code, if there is one.
+function takeSsoResultFromUrl() {
+  const params = new URLSearchParams(window.location.hash.slice(1));
+  const token = params.get("token");
+  const error = params.get("error");
+  if (!token && !error) return null;
+
+  // Remove it from the address bar, so the token is not kept in the browser
+  // history or shared by copying the URL.
+  window.history.replaceState(null, "", window.location.pathname + window.location.search);
+  if (token) saveToken(token);
+  return error;
+}
+
+const ssoErrorOnLoad = takeSsoResultFromUrl();
+
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
+  // Error code sent back by SSO (for example "sso_not_allowed"), shown on the
+  // login page until the next sign-in attempt.
+  const [ssoError, setSsoError] = useState(ssoErrorOnLoad);
   // Kept in state as well, so pages can send it with API calls.
   const [token, setToken] = useState(readToken);
   // True while a saved session is being checked after a page reload.
@@ -68,6 +91,7 @@ export function AuthProvider({ children }) {
   }, []);
 
   const login = useCallback(async (email, password) => {
+    setSsoError(null);
     const data = await apiRequest("/auth/login", {
       method: "POST",
       body: { email, password },
@@ -82,11 +106,12 @@ export function AuthProvider({ children }) {
     clearToken();
     setToken(null);
     setUser(null);
+    setSsoError(null);
   }, []);
 
   const value = useMemo(
-    () => ({ user, token, isRestoring, login, logout }),
-    [user, token, isRestoring, login, logout]
+    () => ({ user, token, isRestoring, ssoError, login, logout }),
+    [user, token, isRestoring, ssoError, login, logout]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

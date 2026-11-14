@@ -18,7 +18,9 @@
     "password": "Contraseña",
     "submit": "Ingresar",
     "submitting": "Ingresando…",
-    "temporaryNotice": "Este inicio de sesión es temporal. Pronto se reemplazará por el inicio de sesión institucional (SSO)."
+    "sso": "Iniciar sesión con {{provider}}",
+    "devAccess": "Acceso de desarrollo",
+    "temporaryNotice": "El acceso con correo y contraseña es temporal y solo para desarrollo."
   },
   "home": {
     "welcome": "Hola, {{name}}",
@@ -48,7 +50,10 @@
     "cannot_modify_self": "No puedes desactivarte ni quitarte el rol de administrador.",
     "forbidden": "No tienes permiso para hacer esto.",
     "inactive_user": "Tu cuenta está desactivada.",
-    "invalid_input": "Revisa los datos ingresados: algún campo no es válido."
+    "invalid_input": "Revisa los datos ingresados: algún campo no es válido.",
+    "sso_not_allowed": "Esta cuenta no tiene acceso de administrador. Pide a un administrador que te agregue con este correo.",
+    "sso_failed": "No se pudo completar el inicio de sesión. Inténtalo de nuevo.",
+    "sso_not_configured": "El inicio de sesión único aún no está configurado en el servidor."
   },
   "users": {
     "title": "Usuarios",

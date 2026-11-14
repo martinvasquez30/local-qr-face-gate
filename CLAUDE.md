@@ -58,8 +58,10 @@ Full design in `docs/architecture.md`. In short:
   Issued by an admin, valid 30–60 s, single use through `used_qr_nonces`.
 - **Access log**: every attempt goes to `access_events`; reports filter by date and user.
   Access point endpoints use a terminal key, not SSO.
-- **SSO**: Authlib in the backend; after Microsoft confirms the email, the backend issues
-  its own token, so `get_current_user` does not change.
+- **SSO**: Authlib in the backend with any OpenID Connect provider (Google by default,
+  chosen with `SSO_METADATA_URL`). After the provider confirms the email of an active
+  admin, the backend issues its own token and redirects to `FRONTEND_URL/#token=...` (or
+  `#error=<code>`), so `get_current_user` does not change.
 - **ML** (`ml/`): only threshold calibration (FAR/FRR) with test captures.
 - The original distributed design is kept in `docs/architecture.md` under
   "Future evolution". Do not build it unless asked.
@@ -69,7 +71,8 @@ Full design in `docs/architecture.md`. In short:
 ```
 backend/
   app/main.py          FastAPI app, CORS, routers, startup (init_db), invalid_input handler, /health
-  app/auth.py          Temporary login: /auth/login, /auth/me, get_current_user, require_admin
+  app/auth.py          Login: SSO (/auth/sso/login, /auth/sso/callback) and temporary
+                       password login (/auth/login); /auth/me, get_current_user, require_admin
   app/security.py      PBKDF2 password hashing and HMAC-signed tokens (stdlib only)
   app/config.py        Settings from environment variables, with dev defaults
   app/database.py      SQLAlchemy engine, get_db (one session per request), init_db + demo admin
@@ -103,9 +106,12 @@ Backend (from `backend/`):
 python -m venv .venv
 # Windows: .venv\Scripts\activate   |   macOS/Linux: source .venv/bin/activate
 pip install -r requirements.txt -r requirements-dev.txt
-uvicorn app.main:app --reload     # http://localhost:8000, docs at /docs
+uvicorn app.main:app --reload --env-file .env   # http://localhost:8000, docs at /docs
 pytest
 ```
+
+`backend/.env` (copied from `backend/.env.example`, never committed) holds the SSO client
+values and fixed secrets. Without it the server still runs, with SSO turned off.
 
 Frontend (from `frontend/`):
 
@@ -149,11 +155,12 @@ Development login: `admin@example.com` / `admin123`.
 
 ### Next steps
 
-1. Dynamic QR codes: issue (admin) and check at the access point (single use); each
+1. SSO in the frontend: "Sign in with Google" button; `AuthContext.jsx` reads `#token`
+   or `#error` on load (backend done).
+2. Face model and camera, face enrollment, verification at the access point.
+3. Dynamic QR codes: issue (admin) and check at the access point (single use); each
    check writes an `access_events` row.
-2. History / reports page in the frontend on top of `GET /access-events`.
-3. Face enrollment and verification at the access point, with QR fallback.
-4. SSO with Microsoft Entra ID through Authlib (ask for the app registration early).
+4. History / reports page in the frontend on top of `GET /access-events`.
 5. Threshold calibration, full check with the internet disconnected.
 
 ### Open questions

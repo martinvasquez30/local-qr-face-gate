@@ -12,6 +12,7 @@ from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from starlette.middleware.sessions import SessionMiddleware
 
 from app import access_events, auth, users
 from app.config import settings
@@ -42,6 +43,11 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Signed cookie used only during SSO: Authlib stores a random "state" value in
+# it before sending the browser to the provider, and checks it on the way back,
+# so an answer that was not requested by this browser is rejected.
+app.add_middleware(SessionMiddleware, secret_key=settings.session_secret)
 
 app.include_router(auth.router)
 app.include_router(users.router)

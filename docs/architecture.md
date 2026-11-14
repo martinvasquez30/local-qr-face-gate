@@ -18,7 +18,7 @@ the **access point** (kiosk). Internet is only needed to sign in with SSO.
 └──────────────────────────────┬───────────────────────────────┘
                                │ HTTP + JSON (descriptors, never photos)
 ┌──────────────────────────────▼───────────────────────────────┐       ┌────────────────────┐
-│  FASTAPI (same machine or local network)                     │ SSO   │ Microsoft Entra ID │
+│  FASTAPI (same machine or local network)                     │ SSO   │ SSO provider       │
 │   auth · users · faces · access (face / QR) · reports        │─ ─ ─ ▶│ (internet, only to │
 └──────────────────────────────┬───────────────────────────────┘       │  sign in)          │
                                │ SQLAlchemy                            └────────────────────┘
@@ -39,7 +39,8 @@ the **access point** (kiosk). Internet is only needed to sign in with SSO.
 | Writing events at the access point, reports page | Planned |
 | Dynamic QR codes | Planned |
 | Face enrollment and verification | Planned |
-| SSO | Planned |
+| SSO: backend endpoints (OpenID Connect, Google first) | Done (week 6) |
+| SSO: login button in the frontend | Planned |
 
 ## Design decisions
 
@@ -131,13 +132,18 @@ not with SSO, so the kiosk keeps working without internet.
 
 ### 7. SSO for the admin portal
 
-SSO (Microsoft Entra ID) protects the admin portal. The access point does not depend on it.
+SSO protects the admin portal. The access point does not depend on it.
+
+Any **OpenID Connect** provider works with the same code: the provider is chosen with
+`SSO_METADATA_URL` and the client values in the server settings. Development uses Google
+because its app registration needs no approval. Microsoft Entra ID (for example, university
+accounts) only needs other values; it must use the tenant-specific metadata URL, because
+with the shared `common` URL the token issuer does not match and Authlib rejects it.
 
 #### Temporary login until SSO is ready
 
-SSO needs an app registration in Entra ID, which may need approval from the university.
-Until then, a temporary email/password login is used. It is built so it can be swapped
-for SSO without touching the rest of the app:
+Until the SSO button is in the frontend, a temporary email/password login is used. Both
+are built so that the rest of the app does not depend on how the admin logged in:
 
 | Layer | Single entry point | Everything else uses... |
 |---|---|---|
@@ -153,17 +159,27 @@ How it works today:
 3. `get_current_user` checks the signature and the expiry, reads the user from the
    database and returns it.
 
-What changes with SSO (planned with Authlib, an OpenID Connect client for FastAPI):
+How SSO works (backend done, with Authlib):
 
-- The backend gets two new endpoints: one redirects the admin to Microsoft, and the other
-  receives the answer. Authlib checks Microsoft's signed answer and gives the backend the
-  admin's email.
-- The backend looks up that email in the `users` table, checks that the user is an active
-  admin and then issues **the same token as today**. So `get_current_user` and the
-  protected endpoints do not change.
-- `AuthContext.jsx`: `login()` sends the browser to the backend's SSO endpoint instead of
-  sending a password, and stores the token it gets back.
-- The password endpoint is removed once SSO works.
+1. `GET /auth/sso/login` saves a random `state` value in a signed, short-lived cookie
+   (Starlette's `SessionMiddleware`) and redirects the browser to the provider.
+2. The admin signs in on the provider's page, and the provider sends the browser back to
+   `GET /auth/sso/callback`.
+3. Authlib checks that the `state` matches (so the answer was asked for by this browser),
+   exchanges the code for the identity token and checks its signature with the provider's
+   public keys.
+4. The backend reads the email (`email`, or `preferred_username` for Microsoft), rejects
+   it if the provider says it is not verified, and looks for an **active admin** with
+   that email.
+5. It then issues **the same token as the password login** and redirects to
+   `FRONTEND_URL/#token=...`. On any problem it redirects to `FRONTEND_URL/#error=<code>`
+   (`sso_not_configured`, `sso_failed` or `sso_not_allowed`). The part after `#` stays in
+   the browser and is never sent to a server, so the token does not end up in logs.
+
+Because the backend keeps issuing its own token, `get_current_user` and the protected
+endpoints do not change. What is left is the frontend: a "Sign in with Google" button and
+`AuthContext.jsx` reading `#token` or `#error` when the page loads. The password endpoint
+is removed or hidden once SSO works end to end.
 
 API errors return a stable code in `detail` (for example `invalid_credentials`), never a
 sentence. The frontend translates the code, so the backend stays language-agnostic.

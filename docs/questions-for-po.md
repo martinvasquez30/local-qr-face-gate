@@ -5,12 +5,14 @@
 
 ## 1. SSO and offline operation
 
-SSO (Microsoft Entra ID) needs an internet connection, but enrollment and QR validation
-must work offline.
+SSO needs an internet connection, but enrollment and QR validation must work offline.
+The SSO code works with any OpenID Connect provider; development uses Google, and switching
+to Microsoft (university accounts) is a configuration change.
 
 - **Current plan:** SSO only protects the admin portal. The access point does not depend
   on SSO to validate people at the door; its endpoints use a terminal key instead.
-- **Question:** Is SSO for the admin portal enough to meet the SSO requirement?
+- **Question:** Is SSO for the admin portal enough to meet the SSO requirement? Must it
+  use the university (Microsoft) account, or is another provider such as Google fine?
 - **Answer:** _pending_
 
 ## 2. Meaning of "local, with no internet connection"

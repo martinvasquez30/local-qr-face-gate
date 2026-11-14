@@ -19,6 +19,20 @@ class Settings:
     cors_origins: tuple[str, ...]
     # SQLAlchemy database URL. SQLite in development; PostgreSQL later.
     database_url: str
+    # SSO (OpenID Connect). The metadata URL says which provider is used:
+    # Google, Microsoft or any other works with the same code.
+    sso_metadata_url: str
+    # Given by the provider when the app is registered. Empty = SSO turned off.
+    sso_client_id: str
+    sso_client_secret: str
+    # Signs the short-lived cookie that keeps the SSO state between the trip to
+    # the provider and the way back.
+    session_secret: str
+    # Where the browser goes after SSO, with the token or an error code.
+    frontend_url: str
+
+
+GOOGLE_METADATA_URL = "https://accounts.google.com/.well-known/openid-configuration"
 
 
 def load_settings() -> Settings:
@@ -34,6 +48,11 @@ def load_settings() -> Settings:
         ),
         # Relative to the folder the server is started from (backend/).
         database_url=os.environ.get("DATABASE_URL", "sqlite:///./data/app.db"),
+        sso_metadata_url=os.environ.get("SSO_METADATA_URL", GOOGLE_METADATA_URL),
+        sso_client_id=os.environ.get("SSO_CLIENT_ID", ""),
+        sso_client_secret=os.environ.get("SSO_CLIENT_SECRET", ""),
+        session_secret=os.environ.get("SESSION_SECRET") or secrets.token_urlsafe(32),
+        frontend_url=os.environ.get("FRONTEND_URL", "http://localhost:5173").rstrip("/"),
     )
 
 

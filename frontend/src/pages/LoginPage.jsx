@@ -3,10 +3,11 @@ import { useTranslation } from "react-i18next";
 import { errorCodeOf } from "../api.js";
 import { useAuth } from "../auth/AuthContext.jsx";
 import ErrorMessage from "../components/ErrorMessage.jsx";
+import { API_BASE_URL, SSO_PROVIDER_NAME } from "../config.js";
 
 function LoginPage() {
   const { t } = useTranslation();
-  const { login } = useAuth();
+  const { login, ssoError } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   // The error code is stored, not the message, so the message is translated
@@ -37,6 +38,17 @@ function LoginPage() {
       <h1 className="title">{t("login.title")}</h1>
       <p className="subtitle">{t("login.subtitle")}</p>
 
+      <div className="sso">
+        {/* A normal link, not an API call: the whole page goes to the provider
+            and the backend sends it back here with "#token=..." or "#error=...". */}
+        <a className="button button--primary button--block" href={`${API_BASE_URL}/auth/sso/login`}>
+          {t("login.sso", { provider: SSO_PROVIDER_NAME })}
+        </a>
+        <ErrorMessage code={ssoError} />
+      </div>
+
+      <p className="divider">{t("login.devAccess")}</p>
+
       {/* noValidate: we show our own translated messages instead of the
           browser's built-in ones, which use the browser's language. */}
       <form className="form" onSubmit={handleSubmit} noValidate>
@@ -66,7 +78,7 @@ function LoginPage() {
 
         <ErrorMessage code={errorCode} />
 
-        <button className="button button--primary" type="submit" disabled={isSubmitting}>
+        <button className="button button--secondary" type="submit" disabled={isSubmitting}>
           {isSubmitting ? t("login.submitting") : t("login.submit")}
         </button>
       </form>

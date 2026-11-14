@@ -18,7 +18,9 @@
     "password": "Password",
     "submit": "Sign in",
     "submitting": "Signing in…",
-    "temporaryNotice": "This is a temporary login. It will soon be replaced by the university's single sign-on (SSO)."
+    "sso": "Sign in with {{provider}}",
+    "devAccess": "Development access",
+    "temporaryNotice": "Signing in with an email and password is temporary and only for development."
   },
   "home": {
     "welcome": "Hello, {{name}}",
@@ -48,7 +50,10 @@
     "cannot_modify_self": "You cannot deactivate yourself or remove your own admin role.",
     "forbidden": "You do not have permission to do this.",
     "inactive_user": "Your account has been deactivated.",
-    "invalid_input": "Check the data you entered: some field is not valid."
+    "invalid_input": "Check the data you entered: some field is not valid.",
+    "sso_not_allowed": "This account does not have administrator access. Ask an administrator to add you with this email.",
+    "sso_failed": "Sign-in could not be completed. Please try again.",
+    "sso_not_configured": "Single sign-on is not set up on the server yet."
   },
   "users": {
     "title": "Users",
