@@ -62,7 +62,10 @@
     "face_model_failed": "The face model could not be loaded.",
     "camera_not_ready": "The camera is not showing a picture yet. Wait a moment and try again.",
     "user_inactive": "This user is deactivated. Reactivate them to enroll their face.",
-    "invalid_terminal_key": "The terminal key is not valid. Check the access point settings."
+    "invalid_terminal_key": "The terminal key is not valid. Check the access point settings.",
+    "qr_expired": "The QR code has expired. Ask for a new one.",
+    "qr_invalid": "The QR code is not valid.",
+    "qr_already_used": "This QR code was already used."
   },
   "kiosk": {
     "title": "Access point",
@@ -70,7 +73,7 @@
     "multiple": "One person at a time",
     "granted": "Welcome, {{name}}",
     "denied": "Not recognized",
-    "qrFallback": "Not recognized? Ask an administrator for a QR code.",
+    "qrFallback": "Not recognized? Use a QR code (ask an administrator for one).",
     "reconfigure": "Change settings",
     "direction": {
       "in": "Entry",
@@ -82,7 +85,10 @@
       "key": "Terminal key",
       "direction": "Door type",
       "save": "Save"
-    }
+    },
+    "useQr": "Use a QR code",
+    "backToFace": "Back to face recognition",
+    "showQr": "Show your QR code to the camera"
   },
   "enroll": {
     "back": "← Back to users",
@@ -128,7 +134,8 @@
     "actions": {
       "face": "Face",
       "deactivate": "Deactivate",
-      "reactivate": "Reactivate"
+      "reactivate": "Reactivate",
+      "qr": "QR"
     },
     "create": {
       "title": "Add user",
@@ -136,5 +143,11 @@
       "saving": "Saving…",
       "success": "{{name}} was added."
     }
+  },
+  "qr": {
+    "title": "Temporary QR code",
+    "expiresIn": "Expires in {{seconds}} s · renews by itself",
+    "help": "Show it to the access point camera; a photo on a phone works. It works only once.",
+    "renew": "Create another"
   }
 }

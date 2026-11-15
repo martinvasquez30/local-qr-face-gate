@@ -148,6 +148,8 @@ All variables are optional in development. The easiest way to set them is a
 | `TERMINAL_KEY` | backend | `dev-terminal-key` | Key the access point (`/kiosk`) sends to prove it is a trusted device. Change it outside development. |
 | `FACE_MATCH_THRESHOLD` | backend | `0.5` | Largest face distance that is still accepted. |
 | `FACE_MATCH_MARGIN` | backend | `0.05` | How much closer the best match must be than the second best. |
+| `QR_SECRET` | backend | random on each start | Signs QR codes. Must be different from `TOKEN_SECRET`. |
+| `QR_TTL_SECONDS` | backend | `60` | How long a QR code is valid, in seconds. |
 | `VITE_API_BASE_URL` | frontend | `http://localhost:8000` | Backend URL. Copy `frontend/.env.example` to `frontend/.env` to change it. |
 | `VITE_SSO_PROVIDER_NAME` | frontend | `Google` | Name on the SSO button. Must match the provider set in the backend. |
 
@@ -180,10 +182,10 @@ values, and register it in `frontend/src/i18n.js` (`LANGUAGE_NAMES` and `resourc
 - [x] User management (admin portal)
 - [x] Simplified architecture: one local server, no cloud services
 - [ ] Access log (every attempt) and reports by date and user
-- [ ] Dynamic QR codes (HMAC-signed, single use)
+- [x] Dynamic QR codes (HMAC-signed with their own key, valid 60 s, single use): `/users/{id}/qr`
 - [ ] Face enrollment (descriptors only, no photos)
 - [x] Face verification at the access point (`/kiosk`); QR fallback suggested after 3 failures
-- [ ] QR code reading at the access point
+- [x] QR code reading at the access point (same camera, "Use a QR code" button)
 - [ ] Match threshold calibrated with test captures (FAR / FRR)
 - [ ] SSO login (OpenID Connect, Google first): backend and frontend done, test with a real Google client pending
 - [x] Face model and camera in the browser (`/face-check`)
@@ -203,7 +205,7 @@ has been reviewed and studied by the author.
 | 2026-10-25 | Claude Code (Anthropic) | Planning and implementation of the SQLite database layer and users API (backend), the users management page with routing (frontend), translations, styles and pytest tests |
 | 2026-11-08 | Claude Code (Anthropic) | Architecture and complexity review, simplified architecture docs, week 3 progress notes and documentation updates, access events table and filtered list API with pytest tests |
 | 2026-11-13 | Claude Code (Anthropic) | SSO login in the backend (OpenID Connect with Authlib), pytest tests with a faked provider, SSO setup docs |
-| 2026-11-14 | Claude Code (Anthropic) | SSO sign-in button and token handling in the frontend; face model loading with face-api, camera component, camera check page and model copy script; face enrollment API (pytest tests) and capture page; removal of the `ml/` folder; face verification at the access point (`POST /access/face` with pytest tests, `/kiosk` page) |
+| 2026-11-14 | Claude Code (Anthropic) | SSO sign-in button and token handling in the frontend; face model loading with face-api, camera component, camera check page and model copy script; face enrollment API (pytest tests) and capture page; removal of the `ml/` folder; face verification at the access point (`POST /access/face` with pytest tests, `/kiosk` page); dynamic single-use QR codes (issue and check endpoints with pytest tests, QR page, QR reading at the kiosk) |
 
 ### Third-party libraries
 
@@ -223,6 +225,8 @@ has been reviewed and studied by the author.
 | [react-i18next](https://react.i18next.com/) | React bindings for i18next (`useTranslation`) | MIT |
 | [React Router](https://reactrouter.com/) (`react-router-dom`) | Page routes (`/`, `/users`) and navigation links | MIT |
 | [@vladmandic/face-api](https://github.com/vladmandic/face-api) 1.7.15 | Face detection and 128-number face descriptors in the browser (includes TensorFlow.js and the pre-trained weights: SSD MobileNet v1, 68-point landmarks, face recognition net). Repository archived since 2024; the version is pinned. | MIT |
+| [qrcode.react](https://github.com/zpao/qrcode.react) 4.2.0 | Draws the QR code on the admin's QR page | ISC |
+| [jsQR](https://github.com/cozmo/jsQR) 1.4.0 | Reads QR codes from the kiosk camera's picture | Apache-2.0 |
 
 ## Author
 

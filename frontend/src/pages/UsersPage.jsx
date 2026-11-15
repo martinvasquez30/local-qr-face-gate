@@ -137,14 +137,22 @@ function UsersPage() {
                     </span>
                   </td>
                   <td className="users-table__actions">
-                    {/* Only active users can be enrolled. */}
+                    {/* Only active users can be enrolled or get a QR code. */}
                     {user.is_active && (
-                      <Link
-                        className="button button--secondary button--small"
-                        to={`/users/${user.id}/face`}
-                      >
-                        {t("users.actions.face")}
-                      </Link>
+                      <>
+                        <Link
+                          className="button button--secondary button--small"
+                          to={`/users/${user.id}/face`}
+                        >
+                          {t("users.actions.face")}
+                        </Link>
+                        <Link
+                          className="button button--secondary button--small"
+                          to={`/users/${user.id}/qr`}
+                        >
+                          {t("users.actions.qr")}
+                        </Link>
+                      </>
                     )}
                     <button
                       className="button button--secondary button--small"

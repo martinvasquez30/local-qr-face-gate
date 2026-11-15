@@ -37,7 +37,7 @@ the **access point** (kiosk). Internet is only needed to sign in with SSO.
 | Spanish / English UI | Done (week 2) |
 | Access log: `access_events` table and admin list with filters | Done (week 5) |
 | Writing events at the access point, reports page | Planned |
-| Dynamic QR codes | Planned |
+| Dynamic QR codes: issue (`/users/{id}/qr`) and check at the kiosk (`POST /access/qr`) | Done (week 6) |
 | Face model and camera in the browser | Done (week 6) |
 | Face enrollment (average of 3 captures, one template per user) | Done (week 6) |
 | Face verification at the access point (`/kiosk`, `POST /access/face`) | Done (week 6) |
@@ -118,6 +118,21 @@ Each QR code holds a small signed token:
 - The same local server creates and checks the codes, so both work without internet. A
   public/private key pair (for example Ed25519) is not needed, because no other device
   has to verify them.
+
+How it works (done in week 6):
+
+1. On the users page, the admin opens "QR" for a person (`/users/:userId/qr`). The page
+   calls `POST /users/{id}/qr` and draws the returned token as a QR code
+   (`qrcode.react`), with a 60-second countdown. At 0 it asks for a new code.
+2. The token's subject is `"<user_id>:<nonce>"`, signed with `QR_SECRET` and an expiry.
+3. At the kiosk, "Use a QR code" switches the same camera to QR reading: every 300 ms the
+   picture is copied to a canvas and `jsQR` looks for a code (for up to 20 s).
+4. `POST /access/qr` checks the signature and expiry, that the user exists and is active,
+   and saves the nonce. Denied codes get a reason: `qr_invalid`, `qr_expired`,
+   `user_inactive` or `qr_already_used`.
+5. The result goes through the same `record_access` as faces, so both methods share one
+   log. In the demo, the person takes a photo of the code with a phone and shows it to
+   the kiosk; showing it a second time is denied.
 
 ### 6. Every access attempt is logged
 
@@ -224,7 +239,7 @@ SQLite in development, through SQLAlchemy.
 | `users` | id, email, name, role (`admin` / `member`), is_active, password_hash (admins only), created_at, updated_at | Done |
 | `face_templates` | id, user_id (unique: one per user), descriptor (average of the captures, 128 numbers), created_at | Done |
 | `access_events` | id, user_id (empty if nobody was recognized), method (`face` / `qr`), result (`granted` / `denied`), direction (`in` / `out`), distance (face only), created_at | Done |
-| `used_qr_nonces` | nonce (unique), used_at | Planned |
+| `used_qr_nonces` | nonce (primary key, so it is unique), used_at | Done |
 
 Users are deactivated, never deleted, because access events point to them.
 

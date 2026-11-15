@@ -36,3 +36,10 @@ export function enrollFace(token, userId, descriptors) {
 export function deleteFace(token, userId) {
   return apiRequest(`/users/${userId}/face`, { method: "DELETE", token });
 }
+
+// --- QR codes (/users/{id}/qr) --------------------------------------------------
+
+/** A new single-use QR code: `{ token, expires_in }` (seconds). */
+export function createQr(token, userId) {
+  return apiRequest(`/users/${userId}/qr`, { method: "POST", token });
+}

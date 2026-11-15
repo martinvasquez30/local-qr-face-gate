@@ -8,6 +8,7 @@ import FaceCheckPage from "./pages/FaceCheckPage.jsx";
 import HomePage from "./pages/HomePage.jsx";
 import KioskPage from "./pages/KioskPage.jsx";
 import LoginPage from "./pages/LoginPage.jsx";
+import QrPage from "./pages/QrPage.jsx";
 import UsersPage from "./pages/UsersPage.jsx";
 
 function App() {
@@ -38,6 +39,10 @@ function App() {
         <Route
           path="/users/:userId/face"
           element={isAdmin ? <EnrollFacePage /> : <Navigate to="/" replace />}
+        />
+        <Route
+          path="/users/:userId/qr"
+          element={isAdmin ? <QrPage /> : <Navigate to="/" replace />}
         />
         <Route
           path="/face-check"

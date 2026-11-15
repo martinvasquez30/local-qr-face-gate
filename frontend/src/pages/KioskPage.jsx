@@ -4,12 +4,15 @@ import { errorCodeOf } from "../api.js";
 import Camera from "../components/Camera.jsx";
 import ErrorMessage from "../components/ErrorMessage.jsx";
 import { getDescriptor, loadFaceModels } from "../face/faceModel.js";
-import { checkFace } from "../kiosk/kioskApi.js";
+import { checkFace, checkQr } from "../kiosk/kioskApi.js";
+import { readQrFromVideo } from "../kiosk/qrScanner.js";
 
 const SETTINGS_KEY = "kioskSettings";
 const CHECK_EVERY_MS = 1500; // How often the kiosk looks for a face.
 const SHOW_RESULT_MS = 3000; // How long a result stays on screen.
 const FAILURES_BEFORE_QR = 3; // Denied attempts in a row before suggesting a QR code.
+const QR_SCAN_EVERY_MS = 300; // How often the picture is searched for a QR code.
+const QR_MODE_TIMEOUT_MS = 20000; // Back to face recognition if no code is shown.
 
 // The kiosk settings (terminal key and entry/exit) stay in this browser, so
 // the kiosk is set up only once. Storage access can fail (privacy mode).
@@ -122,14 +125,16 @@ function KioskSetup({ errorCode, onSaved }) {
 }
 
 /**
- * The screen at the door. Every CHECK_EVERY_MS it looks for exactly one face,
- * sends its 128 numbers to the server and shows the server's decision.
+ * The screen at the door. In "face" mode, every CHECK_EVERY_MS it looks for
+ * exactly one face, sends its 128 numbers to the server and shows the server's
+ * decision. In "qr" mode it reads a QR code with the same camera instead.
  */
 function KioskScreen({ settings, onInvalidKey, onReconfigure }) {
   const { t } = useTranslation();
   const videoRef = useRef(null);
   const [isModelReady, setIsModelReady] = useState(false);
-  // What the screen says: idle, multiple, granted, denied or error.
+  const [mode, setMode] = useState("face"); // "face" or "qr"
+  // What the screen says: idle, showQr, multiple, granted, denied or error.
   const [message, setMessage] = useState({ kind: "idle" });
   const [failures, setFailures] = useState(0);
 
@@ -139,8 +144,9 @@ function KioskScreen({ settings, onInvalidKey, onReconfigure }) {
       .catch(() => setMessage({ kind: "error", code: "face_model_failed" }));
   }, []);
 
+  // Face mode loop.
   useEffect(() => {
-    if (!isModelReady) return undefined;
+    if (!isModelReady || mode !== "face") return undefined;
     let stopped = false;
     // After someone gets in, wait until they leave the camera before checking
     // again, so one person is not logged many times in a row.
@@ -185,12 +191,62 @@ function KioskScreen({ settings, onInvalidKey, onReconfigure }) {
     return () => {
       stopped = true;
     };
-  }, [isModelReady, settings, onInvalidKey]);
+  }, [isModelReady, mode, settings, onInvalidKey]);
+
+  // QR mode loop: look for a code, check it once, show the result, go back.
+  useEffect(() => {
+    if (mode !== "qr") return undefined;
+    let stopped = false;
+    const canvas = document.createElement("canvas");
+    const startedAt = Date.now();
+    setMessage({ kind: "showQr" });
+
+    async function run() {
+      while (!stopped) {
+        await wait(QR_SCAN_EVERY_MS);
+        if (stopped) return;
+        if (Date.now() - startedAt > QR_MODE_TIMEOUT_MS) {
+          setMessage({ kind: "idle" });
+          setMode("face");
+          return;
+        }
+        const token = readQrFromVideo(videoRef.current, canvas);
+        if (!token) continue;
+
+        try {
+          const decision = await checkQr(settings.terminalKey, token, settings.direction);
+          if (stopped) return;
+          setMessage({ kind: decision.result, name: decision.user_name, reason: decision.reason });
+          if (decision.result === "granted") setFailures(0);
+        } catch (error) {
+          if (stopped) return;
+          const code = errorCodeOf(error);
+          if (code === "invalid_terminal_key") {
+            onInvalidKey();
+            return;
+          }
+          setMessage({ kind: "error", code });
+        }
+        await wait(SHOW_RESULT_MS);
+        if (stopped) return;
+        setMessage({ kind: "idle" });
+        setMode("face");
+        return;
+      }
+    }
+
+    run();
+    return () => {
+      stopped = true;
+    };
+  }, [mode, settings, onInvalidKey]);
 
   let text;
-  if (!isModelReady && message.kind !== "error") text = t("faceCheck.loadingModel");
+  if (message.kind === "showQr") text = t("kiosk.showQr");
+  else if (!isModelReady && message.kind !== "error") text = t("faceCheck.loadingModel");
   else if (message.kind === "granted") text = t("kiosk.granted", { name: message.name });
-  else if (message.kind === "denied") text = t("kiosk.denied");
+  else if (message.kind === "denied")
+    text = message.reason ? t(`errors.${message.reason}`) : t("kiosk.denied");
   else if (message.kind === "multiple") text = t("kiosk.multiple");
   else if (message.kind === "error")
     text = t(`errors.${message.code}`, { defaultValue: t("errors.unexpected_error") });
@@ -208,11 +264,31 @@ function KioskScreen({ settings, onInvalidKey, onReconfigure }) {
         {text}
       </p>
 
-      {failures >= FAILURES_BEFORE_QR && <p className="notice">{t("kiosk.qrFallback")}</p>}
+      {mode === "face" && failures >= FAILURES_BEFORE_QR && (
+        <p className="notice">{t("kiosk.qrFallback")}</p>
+      )}
 
-      <button className="button button--secondary button--small kiosk__setup" type="button" onClick={onReconfigure}>
-        {t("kiosk.reconfigure")}
-      </button>
+      <div className="kiosk__actions">
+        {mode === "face" ? (
+          <button className="button button--primary" type="button" onClick={() => setMode("qr")}>
+            {t("kiosk.useQr")}
+          </button>
+        ) : (
+          <button
+            className="button button--secondary"
+            type="button"
+            onClick={() => {
+              setMessage({ kind: "idle" });
+              setMode("face");
+            }}
+          >
+            {t("kiosk.backToFace")}
+          </button>
+        )}
+        <button className="button button--secondary button--small kiosk__setup" type="button" onClick={onReconfigure}>
+          {t("kiosk.reconfigure")}
+        </button>
+      </div>
     </section>
   );
 }

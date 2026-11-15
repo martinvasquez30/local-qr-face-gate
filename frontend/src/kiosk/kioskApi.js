@@ -14,3 +14,15 @@ export function checkFace(terminalKey, descriptor, direction) {
     extraHeaders: { "X-Terminal-Key": terminalKey },
   });
 }
+
+/**
+ * Ask the server whether this QR code can get in. `token` is the text read
+ * from the code. Same answer shape, plus `reason` when it is denied.
+ */
+export function checkQr(terminalKey, token, direction) {
+  return apiRequest("/access/qr", {
+    method: "POST",
+    body: { token, direction },
+    extraHeaders: { "X-Terminal-Key": terminalKey },
+  });
+}
