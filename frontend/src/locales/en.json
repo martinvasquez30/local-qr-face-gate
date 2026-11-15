@@ -9,7 +9,8 @@
   "nav": {
     "label": "Main navigation",
     "home": "Home",
-    "users": "Users"
+    "users": "Users",
+    "kiosk": "Access point"
   },
   "login": {
     "title": "Sign in",
@@ -60,7 +61,28 @@
     "camera_unavailable": "The camera could not be opened. Check that no other app is using it and that the page is on localhost.",
     "face_model_failed": "The face model could not be loaded.",
     "camera_not_ready": "The camera is not showing a picture yet. Wait a moment and try again.",
-    "user_inactive": "This user is deactivated. Reactivate them to enroll their face."
+    "user_inactive": "This user is deactivated. Reactivate them to enroll their face.",
+    "invalid_terminal_key": "The terminal key is not valid. Check the access point settings."
+  },
+  "kiosk": {
+    "title": "Access point",
+    "idle": "Look at the camera",
+    "multiple": "One person at a time",
+    "granted": "Welcome, {{name}}",
+    "denied": "Not recognized",
+    "qrFallback": "Not recognized? Ask an administrator for a QR code.",
+    "reconfigure": "Change settings",
+    "direction": {
+      "in": "Entry",
+      "out": "Exit"
+    },
+    "setup": {
+      "title": "Set up the access point",
+      "subtitle": "Done once in this browser. It works without signing in and without internet.",
+      "key": "Terminal key",
+      "direction": "Door type",
+      "save": "Save"
+    }
   },
   "enroll": {
     "back": "← Back to users",

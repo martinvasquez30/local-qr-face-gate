@@ -145,6 +145,9 @@ All variables are optional in development. The easiest way to set them is a
 | `SSO_CLIENT_SECRET` | backend | empty | Client secret given by the SSO provider. Never commit it. |
 | `SESSION_SECRET` | backend | random on each start | Signs the short-lived cookie used during the SSO sign-in. |
 | `FRONTEND_URL` | backend | `http://localhost:5173` | Where the browser is sent after SSO. |
+| `TERMINAL_KEY` | backend | `dev-terminal-key` | Key the access point (`/kiosk`) sends to prove it is a trusted device. Change it outside development. |
+| `FACE_MATCH_THRESHOLD` | backend | `0.5` | Largest face distance that is still accepted. |
+| `FACE_MATCH_MARGIN` | backend | `0.05` | How much closer the best match must be than the second best. |
 | `VITE_API_BASE_URL` | frontend | `http://localhost:8000` | Backend URL. Copy `frontend/.env.example` to `frontend/.env` to change it. |
 | `VITE_SSO_PROVIDER_NAME` | frontend | `Google` | Name on the SSO button. Must match the provider set in the backend. |
 
@@ -179,7 +182,8 @@ values, and register it in `frontend/src/i18n.js` (`LANGUAGE_NAMES` and `resourc
 - [ ] Access log (every attempt) and reports by date and user
 - [ ] Dynamic QR codes (HMAC-signed, single use)
 - [ ] Face enrollment (descriptors only, no photos)
-- [ ] Face verification at the access point, with QR fallback
+- [x] Face verification at the access point (`/kiosk`); QR fallback suggested after 3 failures
+- [ ] QR code reading at the access point
 - [ ] Match threshold calibrated with test captures (FAR / FRR)
 - [ ] SSO login (OpenID Connect, Google first): backend and frontend done, test with a real Google client pending
 - [x] Face model and camera in the browser (`/face-check`)
@@ -199,7 +203,7 @@ has been reviewed and studied by the author.
 | 2026-10-25 | Claude Code (Anthropic) | Planning and implementation of the SQLite database layer and users API (backend), the users management page with routing (frontend), translations, styles and pytest tests |
 | 2026-11-08 | Claude Code (Anthropic) | Architecture and complexity review, simplified architecture docs, week 3 progress notes and documentation updates, access events table and filtered list API with pytest tests |
 | 2026-11-13 | Claude Code (Anthropic) | SSO login in the backend (OpenID Connect with Authlib), pytest tests with a faked provider, SSO setup docs |
-| 2026-11-14 | Claude Code (Anthropic) | SSO sign-in button and token handling in the frontend; face model loading with face-api, camera component, camera check page and model copy script; face enrollment API (pytest tests) and capture page; removal of the `ml/` folder |
+| 2026-11-14 | Claude Code (Anthropic) | SSO sign-in button and token handling in the frontend; face model loading with face-api, camera component, camera check page and model copy script; face enrollment API (pytest tests) and capture page; removal of the `ml/` folder; face verification at the access point (`POST /access/face` with pytest tests, `/kiosk` page) |
 
 ### Third-party libraries
 

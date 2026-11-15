@@ -9,7 +9,8 @@
   "nav": {
     "label": "Navegación principal",
     "home": "Inicio",
-    "users": "Usuarios"
+    "users": "Usuarios",
+    "kiosk": "Punto de acceso"
   },
   "login": {
     "title": "Iniciar sesión",
@@ -60,7 +61,28 @@
     "camera_unavailable": "No se pudo abrir la cámara. Revisa que otra aplicación no la esté usando y que la página esté en localhost.",
     "face_model_failed": "No se pudo cargar el modelo facial.",
     "camera_not_ready": "La cámara todavía no muestra imagen. Espera un momento e inténtalo de nuevo.",
-    "user_inactive": "Este usuario está desactivado. Reactívalo para enrolar su rostro."
+    "user_inactive": "Este usuario está desactivado. Reactívalo para enrolar su rostro.",
+    "invalid_terminal_key": "La clave de terminal no es válida. Revisa la configuración del punto de acceso."
+  },
+  "kiosk": {
+    "title": "Punto de acceso",
+    "idle": "Mira a la cámara",
+    "multiple": "Solo una persona a la vez",
+    "granted": "Bienvenido/a, {{name}}",
+    "denied": "No reconocido",
+    "qrFallback": "¿No te reconoce? Pide un código QR al administrador.",
+    "reconfigure": "Cambiar configuración",
+    "direction": {
+      "in": "Entrada",
+      "out": "Salida"
+    },
+    "setup": {
+      "title": "Configurar punto de acceso",
+      "subtitle": "Se hace una sola vez en este navegador. Funciona sin iniciar sesión y sin internet.",
+      "key": "Clave de terminal",
+      "direction": "Tipo de puerta",
+      "save": "Guardar"
+    }
   },
   "enroll": {
     "back": "← Volver a usuarios",

@@ -83,6 +83,8 @@ backend/
   app/faces.py         Admin-only GET/PUT/DELETE /users/{id}/face (average of captures;
                        the numbers are never returned)
   app/access_events.py Admin-only GET /access-events (filters: start, end, user_id)
+  app/access.py        Access point: require_terminal (X-Terminal-Key), POST /access/face,
+                       find_match (threshold + margin), record_access (writes access_events)
   tests/               pytest; conftest.py gives each test an in-memory SQLite database
 frontend/
   src/main.jsx         Entry point: loads i18n, wraps the app in BrowserRouter and AuthProvider
@@ -94,7 +96,9 @@ frontend/
   src/components/      LanguageSwitcher, BackendStatus, NavBar, ErrorMessage, Camera
   src/pages/           LoginPage (SSO button + dev password form), HomePage, UsersPage,
                        FaceCheckPage (camera and face model check),
-                       EnrollFacePage (/users/:userId/face: consent, 3 captures, save)
+                       EnrollFacePage (/users/:userId/face: consent, 3 captures, save),
+                       KioskPage (/kiosk: no user login; terminal key + entry/exit setup)
+  src/kiosk/           kioskApi.js: checkFace (sends X-Terminal-Key)
   src/users/           CreateUserForm and usersApi (calls to /users)
   src/face/            faceModel.js: loads face-api lazily, getDescriptor(video) -> 128 numbers
   scripts/             copy-models.mjs: copies the face model weights to public/models
@@ -162,9 +166,9 @@ Development login: `admin@example.com` / `admin123`.
 
 ### Next steps
 
-1. Verification at the access point: `POST /access/face` (terminal key, threshold 0.5,
-   margin over the second best, writes `access_events`) and `/kiosk` page with QR
-   fallback after 3 failures or ~10 s. Enrollment is done.
+1. QR codes: admin issues them (`POST /users/{id}/qr`, own `QR_SECRET`), the kiosk reads
+   them with jsQR and checks them with `POST /access/qr`, reusing `record_access`.
+   Face enrollment and verification at the kiosk are done.
 2. Test SSO with a real Google OAuth client (`backend/.env`).
 3. Dynamic QR codes: issue (admin) and check at the access point (single use); each
    check writes an `access_events` row.

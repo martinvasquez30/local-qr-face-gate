@@ -19,9 +19,15 @@ export function errorCodeOf(error) {
   return error instanceof ApiError ? error.code : "unexpected_error";
 }
 
-/** Call the backend and return the JSON body, or throw an ApiError. */
-export async function apiRequest(path, { method = "GET", body, token, signal } = {}) {
-  const headers = {};
+/**
+ * Call the backend and return the JSON body, or throw an ApiError.
+ * `extraHeaders` is for special cases, such as the kiosk's X-Terminal-Key.
+ */
+export async function apiRequest(
+  path,
+  { method = "GET", body, token, signal, extraHeaders = {} } = {}
+) {
+  const headers = { ...extraHeaders };
   if (body !== undefined) headers["Content-Type"] = "application/json";
   if (token) headers.Authorization = `Bearer ${token}`;
 

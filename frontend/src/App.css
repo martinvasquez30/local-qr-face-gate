@@ -291,6 +291,34 @@ a.button {
   margin-top: 16px;
 }
 
+/* --- Kiosk (access point) --- */
+
+.kiosk__message {
+  margin: 16px 0 0;
+  padding: 16px;
+  border-radius: var(--radius-small);
+  font-size: clamp(1.25rem, 5vw, 1.75rem);
+  font-weight: 600;
+  text-align: center;
+  background: var(--color-notice-bg);
+  overflow-wrap: anywhere;
+}
+
+.kiosk__message--granted {
+  color: var(--color-online);
+  background: var(--color-success-bg);
+}
+
+.kiosk__message--denied,
+.kiosk__message--error {
+  color: var(--color-error);
+  background: var(--color-error-bg);
+}
+
+.kiosk__setup {
+  margin-top: 16px;
+}
+
 /* --- Face enrollment --- */
 
 .back-link {

@@ -40,7 +40,7 @@ the **access point** (kiosk). Internet is only needed to sign in with SSO.
 | Dynamic QR codes | Planned |
 | Face model and camera in the browser | Done (week 6) |
 | Face enrollment (average of 3 captures, one template per user) | Done (week 6) |
-| Face verification at the access point | Planned |
+| Face verification at the access point (`/kiosk`, `POST /access/face`) | Done (week 6) |
 | SSO: backend endpoints (OpenID Connect, Google first) | Done (week 6) |
 | SSO: login button in the frontend | Planned |
 
@@ -133,6 +133,25 @@ returns dates in UTC (ending in `Z`) so the browser shows them in local time.
 
 The access point's endpoints are protected with a terminal key from the server settings,
 not with SSO, so the kiosk keeps working without internet.
+
+How the access point checks a face (done in week 6):
+
+1. `/kiosk` is set up once in the browser with the terminal key and entry/exit. Every
+   1.5 s it looks for exactly one face and sends its 128 numbers to
+   `POST /access/face` with the `X-Terminal-Key` header.
+2. The server compares them with the faces of all **active** users and takes the closest.
+   It accepts only if that distance is below `FACE_MATCH_THRESHOLD` (0.5) **and** at least
+   `FACE_MATCH_MARGIN` (0.05) smaller than the second closest, so two similar people are
+   never confused.
+3. Every attempt is written to `access_events` with the distance, through one function
+   (`record_access`) that the QR check will reuse. The kiosk only receives "granted" with
+   the person's name, or "denied".
+4. After a person gets in, the kiosk waits until they leave the camera before checking
+   again, so one visit is not logged many times. After 3 denied attempts in a row it
+   suggests asking for a QR code.
+
+Known limitation: there is no liveness check, so a photo of an enrolled person shown on
+a phone can be accepted (measured: 0.42 for a photo vs 0.35 for the real face).
 
 ### 7. SSO for the admin portal
 
