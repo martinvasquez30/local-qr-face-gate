@@ -30,6 +30,14 @@ class Settings:
     session_secret: str
     # Where the browser goes after SSO, with the token or an error code.
     frontend_url: str
+    # Key the access point (kiosk) sends in the X-Terminal-Key header. It plays
+    # the role of a device token: the kiosk has no user login.
+    terminal_key: str
+    # Face matching: accept when the closest enrolled face is nearer than
+    # `face_match_threshold` and at least `face_match_margin` nearer than the
+    # second closest one (so two similar people are never confused).
+    face_match_threshold: float
+    face_match_margin: float
 
 
 GOOGLE_METADATA_URL = "https://accounts.google.com/.well-known/openid-configuration"
@@ -53,6 +61,13 @@ def load_settings() -> Settings:
         sso_client_secret=os.environ.get("SSO_CLIENT_SECRET", ""),
         session_secret=os.environ.get("SESSION_SECRET") or secrets.token_urlsafe(32),
         frontend_url=os.environ.get("FRONTEND_URL", "http://localhost:5173").rstrip("/"),
+        # A fixed development value, so the kiosk works without setup. Set your
+        # own TERMINAL_KEY in any shared environment.
+        terminal_key=os.environ.get("TERMINAL_KEY", "dev-terminal-key"),
+        # 0.5 is stricter than face-api's usual 0.6: letting the wrong person in
+        # is worse than rejecting the right one, who can still use a QR code.
+        face_match_threshold=float(os.environ.get("FACE_MATCH_THRESHOLD", "0.5")),
+        face_match_margin=float(os.environ.get("FACE_MATCH_MARGIN", "0.05")),
     )
 
 

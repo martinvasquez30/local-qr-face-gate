@@ -82,6 +82,26 @@ class FaceStatus(BaseModel):
         return as_utc(value) if value is not None else None
 
 
+Direction = Literal["in", "out"]
+
+
+class FaceAccessRequest(BaseModel):
+    """What the access point sends: the face it sees (128 numbers), never a photo."""
+
+    descriptor: Descriptor
+    direction: Direction = "in"
+
+
+class AccessDecision(BaseModel):
+    """The server's answer to the access point. It never includes face data."""
+
+    result: Literal["granted", "denied"]
+    # Only when access is granted: who came in.
+    user_name: str | None = None
+    # Distance to the closest enrolled face (shown for the demo and the logs).
+    distance: float | None = None
+
+
 class AccessEventOut(BaseModel):
     """Public view of an access event."""
 
