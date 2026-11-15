@@ -14,7 +14,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from starlette.middleware.sessions import SessionMiddleware
 
-from app import access_events, auth, users
+from app import access_events, auth, faces, users
 from app.config import settings
 from app.database import init_db
 
@@ -51,6 +51,7 @@ app.add_middleware(SessionMiddleware, secret_key=settings.session_secret)
 
 app.include_router(auth.router)
 app.include_router(users.router)
+app.include_router(faces.router)
 app.include_router(access_events.router)
 
 

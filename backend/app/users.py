@@ -1,12 +1,12 @@
 """User management for the admin portal. Every endpoint requires an admin."""
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy import func, select
+from sqlalchemy import delete, func, select
 from sqlalchemy.orm import Session
 
 from app.auth import CurrentAdmin, require_admin
 from app.database import DbSession
-from app.models import ROLE_ADMIN, User
+from app.models import ROLE_ADMIN, FaceTemplate, User
 from app.schemas import UserCreate, UserOut, UserUpdate
 
 # `dependencies` applies require_admin to every endpoint in this router, so no
@@ -14,7 +14,7 @@ from app.schemas import UserCreate, UserOut, UserUpdate
 router = APIRouter(prefix="/users", tags=["users"], dependencies=[Depends(require_admin)])
 
 
-def _get_user_or_404(db: Session, user_id: int) -> User:
+def get_user_or_404(db: Session, user_id: int) -> User:
     user = db.get(User, user_id)
     if user is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="user_not_found")
@@ -47,13 +47,13 @@ def create_user(body: UserCreate, db: DbSession) -> User:
 
 @router.get("/{user_id}", response_model=UserOut)
 def get_user(user_id: int, db: DbSession) -> User:
-    return _get_user_or_404(db, user_id)
+    return get_user_or_404(db, user_id)
 
 
 @router.patch("/{user_id}", response_model=UserOut)
 def update_user(user_id: int, body: UserUpdate, db: DbSession, admin: CurrentAdmin) -> User:
     """Change name, role or active status. Only the fields sent are changed."""
-    user = _get_user_or_404(db, user_id)
+    user = get_user_or_404(db, user_id)
     changes = body.model_dump(exclude_none=True)
 
     # An admin cannot lock themselves out (deactivate or drop their admin
@@ -68,6 +68,10 @@ def update_user(user_id: int, body: UserUpdate, db: DbSession, admin: CurrentAdm
 
     for field, value in changes.items():
         setattr(user, field, value)
+    # A deactivated user cannot get in, so their face data is not needed:
+    # delete it (biometric data is kept only while it is used).
+    if changes.get("is_active") is False:
+        db.execute(delete(FaceTemplate).where(FaceTemplate.user_id == user.id))
     db.commit()
     db.refresh(user)
     return user

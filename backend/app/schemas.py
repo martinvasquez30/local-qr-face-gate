@@ -7,9 +7,17 @@ fields like `password_hash`, and clients can only send the fields listed here.
 from datetime import datetime
 from typing import Annotated, Literal
 
-from pydantic import BaseModel, ConfigDict, EmailStr, StringConstraints, field_validator
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    EmailStr,
+    Field,
+    FiniteFloat,
+    StringConstraints,
+    field_validator,
+)
 
-from app.models import as_utc, normalize_email
+from app.models import DESCRIPTOR_LENGTH, as_utc, normalize_email
 
 Role = Literal["admin", "member"]
 
@@ -48,6 +56,30 @@ class UserUpdate(BaseModel):
     name: Name | None = None
     role: Role | None = None
     is_active: bool | None = None
+
+
+# Exactly 128 real numbers (FiniteFloat rejects NaN and infinity).
+Descriptor = Annotated[
+    list[FiniteFloat], Field(min_length=DESCRIPTOR_LENGTH, max_length=DESCRIPTOR_LENGTH)
+]
+
+
+class FaceEnroll(BaseModel):
+    """Descriptors captured in the browser (1 to 5). The server keeps their average."""
+
+    descriptors: list[Descriptor] = Field(min_length=1, max_length=5)
+
+
+class FaceStatus(BaseModel):
+    """Whether a user has an enrolled face. It never includes the numbers."""
+
+    enrolled: bool
+    updated_at: datetime | None = None
+
+    @field_validator("updated_at")
+    @classmethod
+    def _in_utc(cls, value: datetime | None) -> datetime | None:
+        return as_utc(value) if value is not None else None
 
 
 class AccessEventOut(BaseModel):

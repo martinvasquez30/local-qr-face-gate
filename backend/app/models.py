@@ -2,7 +2,7 @@
 
 from datetime import datetime, timezone
 
-from sqlalchemy import DateTime, ForeignKey, String
+from sqlalchemy import JSON, DateTime, ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column, validates
 
 from app.database import Base
@@ -17,6 +17,9 @@ RESULT_GRANTED = "granted"
 RESULT_DENIED = "denied"
 DIRECTION_IN = "in"
 DIRECTION_OUT = "out"
+
+# A face descriptor (from face-api in the browser) is a list of 128 numbers.
+DESCRIPTOR_LENGTH = 128
 
 
 def normalize_email(email: str) -> str:
@@ -63,6 +66,22 @@ class User(Base):
         # Runs every time `email` is assigned, so no code path can store an
         # email with uppercase letters or spaces.
         return normalize_email(email)
+
+
+class FaceTemplate(Base):
+    """The enrolled face of one user: only numbers, never a photo.
+
+    It is the average of the descriptors captured when enrolling. One row per
+    user; enrolling again replaces it.
+    """
+
+    __tablename__ = "face_templates"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), unique=True)
+    # DESCRIPTOR_LENGTH numbers, stored as a JSON list.
+    descriptor: Mapped[list[float]] = mapped_column(JSON)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_utc_now)
 
 
 class AccessEvent(Base):
