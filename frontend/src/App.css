@@ -291,6 +291,37 @@ a.button {
   margin-top: 16px;
 }
 
+/* --- Face enrollment --- */
+
+.back-link {
+  display: inline-block;
+  margin-bottom: 12px;
+  color: var(--color-primary);
+}
+
+.enroll__status {
+  margin: 0 0 16px;
+  padding: 10px 12px;
+  border-radius: var(--radius-small);
+  background: var(--color-notice-bg);
+}
+
+.enroll__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* On narrow screens each button takes the full width. */
+.enroll__actions .button {
+  flex: 1 1 160px;
+}
+
+.enroll__delete {
+  margin-top: 16px;
+  width: 100%;
+}
+
 /* --- Login --- */
 
 .sso {
@@ -437,6 +468,10 @@ a.button {
   text-align: right;
 }
 
+.users-table__actions .button + .button {
+  margin-left: 8px;
+}
+
 .users-table__row--inactive td {
   color: var(--color-muted);
 }
@@ -546,6 +581,11 @@ a.button {
 
   .users-table__actions .button {
     width: 100%;
+  }
+
+  /* Stacked buttons: space above instead of on the left. */
+  .users-table__actions .button + .button {
+    margin: 8px 0 0;
   }
 }
 

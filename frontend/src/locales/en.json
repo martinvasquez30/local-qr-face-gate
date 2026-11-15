@@ -58,7 +58,22 @@
     "multiple_faces": "More than one face is visible. Only one person should be in front of the camera.",
     "camera_denied": "The browser did not allow the camera. Allow it in the site settings and reload.",
     "camera_unavailable": "The camera could not be opened. Check that no other app is using it and that the page is on localhost.",
-    "face_model_failed": "The face model could not be loaded."
+    "face_model_failed": "The face model could not be loaded.",
+    "camera_not_ready": "The camera is not showing a picture yet. Wait a moment and try again.",
+    "user_inactive": "This user is deactivated. Reactivate them to enroll their face."
+  },
+  "enroll": {
+    "back": "← Back to users",
+    "title": "Face enrollment",
+    "notEnrolled": "No face enrolled yet.",
+    "enrolledSince": "Face enrolled on {{date}}. Saving again replaces it.",
+    "consent": "The person agrees that their face is turned into numbers and stored to let them in. No photo is kept.",
+    "capture": "Capture ({{count}}/{{total}})",
+    "save": "Save face",
+    "restart": "Start over",
+    "saved": "Face saved.",
+    "delete": "Delete face",
+    "confirmDelete": "Delete this person's face? They can still get in with a QR code."
   },
   "faceCheck": {
     "title": "Camera check",
@@ -89,6 +104,7 @@
       "inactive": "Inactive"
     },
     "actions": {
+      "face": "Face",
       "deactivate": "Deactivate",
       "reactivate": "Reactivate"
     },

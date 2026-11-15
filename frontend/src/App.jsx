@@ -3,6 +3,7 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import { useAuth } from "./auth/AuthContext.jsx";
 import LanguageSwitcher from "./components/LanguageSwitcher.jsx";
 import NavBar from "./components/NavBar.jsx";
+import EnrollFacePage from "./pages/EnrollFacePage.jsx";
 import FaceCheckPage from "./pages/FaceCheckPage.jsx";
 import HomePage from "./pages/HomePage.jsx";
 import LoginPage from "./pages/LoginPage.jsx";
@@ -29,6 +30,10 @@ function App() {
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/users" element={isAdmin ? <UsersPage /> : <Navigate to="/" replace />} />
+        <Route
+          path="/users/:userId/face"
+          element={isAdmin ? <EnrollFacePage /> : <Navigate to="/" replace />}
+        />
         <Route
           path="/face-check"
           element={isAdmin ? <FaceCheckPage /> : <Navigate to="/" replace />}

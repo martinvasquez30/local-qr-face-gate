@@ -12,7 +12,27 @@ export function createUser(token, { name, email, role }) {
   return apiRequest("/users", { method: "POST", token, body: { name, email, role } });
 }
 
+export function getUser(token, userId, { signal } = {}) {
+  return apiRequest(`/users/${userId}`, { token, signal });
+}
+
 /** `changes` holds only the fields to change: any of name, role, is_active. */
 export function updateUser(token, userId, changes) {
   return apiRequest(`/users/${userId}`, { method: "PATCH", token, body: changes });
+}
+
+// --- Face enrollment (/users/{id}/face) ---------------------------------------
+
+/** `{ enrolled, updated_at }`. The face numbers themselves are never returned. */
+export function getFaceStatus(token, userId, { signal } = {}) {
+  return apiRequest(`/users/${userId}/face`, { token, signal });
+}
+
+/** `descriptors`: the captures, each a list of 128 numbers. The server keeps their average. */
+export function enrollFace(token, userId, descriptors) {
+  return apiRequest(`/users/${userId}/face`, { method: "PUT", token, body: { descriptors } });
+}
+
+export function deleteFace(token, userId) {
+  return apiRequest(`/users/${userId}/face`, { method: "DELETE", token });
 }

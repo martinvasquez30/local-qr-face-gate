@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { Link } from "react-router-dom";
 import { errorCodeOf } from "../api.js";
 import { useAuth } from "../auth/AuthContext.jsx";
 import ErrorMessage from "../components/ErrorMessage.jsx";
@@ -136,6 +137,15 @@ function UsersPage() {
                     </span>
                   </td>
                   <td className="users-table__actions">
+                    {/* Only active users can be enrolled. */}
+                    {user.is_active && (
+                      <Link
+                        className="button button--secondary button--small"
+                        to={`/users/${user.id}/face`}
+                      >
+                        {t("users.actions.face")}
+                      </Link>
+                    )}
                     <button
                       className="button button--secondary button--small"
                       type="button"

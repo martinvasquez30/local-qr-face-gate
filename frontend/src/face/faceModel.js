@@ -43,10 +43,15 @@ export function loadFaceModels() {
  * Compute the descriptor of the face in the video.
  *
  * Returns `{ descriptor }` (an array of 128 numbers) or `{ error }` with
- * "no_face" or "multiple_faces". Exactly one face is required, so a capture
- * can never belong to the wrong person.
+ * "camera_not_ready", "no_face" or "multiple_faces". Exactly one face is
+ * required, so a capture can never belong to the wrong person.
  */
 export async function getDescriptor(video) {
+  // Without a picture yet (camera starting or blocked), face-api would wait
+  // forever for the video, so stop here instead.
+  if (!video || video.readyState < HTMLMediaElement.HAVE_CURRENT_DATA) {
+    return { error: "camera_not_ready" };
+  }
   await loadFaceModels();
   const options = new faceapi.SsdMobilenetv1Options({ minConfidence: MIN_CONFIDENCE });
   const faces = await faceapi

@@ -58,7 +58,22 @@
     "multiple_faces": "Se ve más de un rostro. Solo debe haber una persona frente a la cámara.",
     "camera_denied": "El navegador no permitió usar la cámara. Actívala en la configuración del sitio y recarga.",
     "camera_unavailable": "No se pudo abrir la cámara. Revisa que otra aplicación no la esté usando y que la página esté en localhost.",
-    "face_model_failed": "No se pudo cargar el modelo facial."
+    "face_model_failed": "No se pudo cargar el modelo facial.",
+    "camera_not_ready": "La cámara todavía no muestra imagen. Espera un momento e inténtalo de nuevo.",
+    "user_inactive": "Este usuario está desactivado. Reactívalo para enrolar su rostro."
+  },
+  "enroll": {
+    "back": "← Volver a usuarios",
+    "title": "Enrolamiento facial",
+    "notEnrolled": "Todavía no tiene rostro enrolado.",
+    "enrolledSince": "Rostro enrolado el {{date}}. Si guardas de nuevo, se reemplaza.",
+    "consent": "La persona acepta que su rostro se convierta en números y se guarde para permitirle el acceso. No se guarda ninguna foto.",
+    "capture": "Capturar ({{count}}/{{total}})",
+    "save": "Guardar rostro",
+    "restart": "Empezar de nuevo",
+    "saved": "Rostro guardado.",
+    "delete": "Borrar rostro",
+    "confirmDelete": "¿Borrar el rostro de esta persona? Igual podrá entrar con un código QR."
   },
   "faceCheck": {
     "title": "Prueba de cámara",
@@ -89,6 +104,7 @@
       "inactive": "Inactivo"
     },
     "actions": {
+      "face": "Rostro",
       "deactivate": "Desactivar",
       "reactivate": "Reactivar"
     },
