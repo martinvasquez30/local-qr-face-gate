@@ -38,6 +38,11 @@ class Settings:
     # second closest one (so two similar people are never confused).
     face_match_threshold: float
     face_match_margin: float
+    # Signs QR codes. It must be different from token_secret: with the same key,
+    # a QR code would also work as a login token.
+    qr_secret: str
+    # How long a QR code is valid, in seconds.
+    qr_ttl_seconds: int
 
 
 GOOGLE_METADATA_URL = "https://accounts.google.com/.well-known/openid-configuration"
@@ -68,6 +73,9 @@ def load_settings() -> Settings:
         # is worse than rejecting the right one, who can still use a QR code.
         face_match_threshold=float(os.environ.get("FACE_MATCH_THRESHOLD", "0.5")),
         face_match_margin=float(os.environ.get("FACE_MATCH_MARGIN", "0.05")),
+        # Random on every start if not set: QR codes only live a minute anyway.
+        qr_secret=os.environ.get("QR_SECRET") or secrets.token_urlsafe(32),
+        qr_ttl_seconds=int(os.environ.get("QR_TTL_SECONDS", "60")),
     )
 
 

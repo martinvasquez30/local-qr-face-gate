@@ -99,7 +99,9 @@ def test_an_enrolled_person_gets_in_and_the_attempt_is_logged(client, db, member
     response = check_face(client, 0.1, direction="out")
 
     assert response.status_code == 200
-    assert response.json() == {"result": "granted", "user_name": member.name, "distance": 0.0}
+    assert response.json() == {
+        "result": "granted", "user_name": member.name, "distance": 0.0, "reason": None
+    }
     [event] = logged_events(db)
     assert (event.user_id, event.method, event.result, event.direction) == (
         member.id, "face", "granted", "out"
@@ -134,7 +136,9 @@ def test_an_inactive_user_does_not_get_in(client, db, member):
 def test_with_nobody_enrolled_the_attempt_is_denied(client, db):
     response = check_face(client, 0.1)
 
-    assert response.json() == {"result": "denied", "user_name": None, "distance": None}
+    assert response.json() == {
+        "result": "denied", "user_name": None, "distance": None, "reason": None
+    }
     assert len(logged_events(db)) == 1
 
 

@@ -84,6 +84,19 @@ class FaceTemplate(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_utc_now)
 
 
+class UsedQrNonce(Base):
+    """The random part of every QR code that was already accepted.
+
+    The column is the primary key, so the database itself refuses a second
+    copy: that is what makes each QR code single use.
+    """
+
+    __tablename__ = "used_qr_nonces"
+
+    nonce: Mapped[str] = mapped_column(String(64), primary_key=True)
+    used_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_utc_now)
+
+
 class AccessEvent(Base):
     """One attempt to pass through an access point, accepted or not."""
 

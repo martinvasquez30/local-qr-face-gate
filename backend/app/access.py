@@ -12,12 +12,24 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, Header, HTTPException, status
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.config import settings
 from app.database import DbSession
-from app.models import METHOD_FACE, RESULT_DENIED, RESULT_GRANTED, AccessEvent, FaceTemplate, User
-from app.schemas import AccessDecision, FaceAccessRequest
+from app.models import (
+    METHOD_FACE,
+    METHOD_QR,
+    RESULT_DENIED,
+    RESULT_GRANTED,
+    AccessEvent,
+    FaceTemplate,
+    UsedQrNonce,
+    User,
+)
+from app.qr import read_qr_token
+from app.schemas import AccessDecision, FaceAccessRequest, QrAccessRequest
+from app.security import InvalidTokenError
 
 
 def require_terminal(x_terminal_key: Annotated[str | None, Header()] = None) -> None:
@@ -67,10 +79,16 @@ def record_access(
     method: str,
     direction: str,
     user: User | None,
+    granted: bool,
     distance: float | None = None,
+    reason: str | None = None,
 ) -> AccessDecision:
-    """Log the attempt and build the answer for the kiosk. Used by every method."""
-    result = RESULT_GRANTED if user is not None else RESULT_DENIED
+    """Log the attempt and build the answer for the kiosk. Used by every method,
+    so all access decisions end up in the same log.
+
+    `user` is who the attempt is about, if known (also for a denied QR code).
+    """
+    result = RESULT_GRANTED if granted else RESULT_DENIED
     db.add(
         AccessEvent(
             user_id=user.id if user else None,
@@ -83,8 +101,9 @@ def record_access(
     db.commit()
     return AccessDecision(
         result=result,
-        user_name=user.name if user else None,
+        user_name=user.name if granted else None,
         distance=round(distance, 3) if distance is not None else None,
+        reason=reason,
     )
 
 
@@ -103,5 +122,43 @@ def check_face(body: FaceAccessRequest, db: DbSession) -> AccessDecision:
     )
     user = db.get(User, user_id) if user_id is not None else None
     return record_access(
-        db, method=METHOD_FACE, direction=body.direction, user=user, distance=distance
+        db,
+        method=METHOD_FACE,
+        direction=body.direction,
+        user=user,
+        granted=user is not None,
+        distance=distance,
     )
+
+
+@router.post("/qr", response_model=AccessDecision)
+def check_qr(body: QrAccessRequest, db: DbSession) -> AccessDecision:
+    """Check a QR code read by the kiosk: signature, expiry, user and single use."""
+
+    def deny(reason: str, user: User | None = None) -> AccessDecision:
+        return record_access(
+            db, method=METHOD_QR, direction=body.direction, user=user, granted=False, reason=reason
+        )
+
+    try:
+        user_id, nonce = read_qr_token(body.token)
+    except InvalidTokenError as error:
+        # Expired is told apart so the kiosk can say "ask for a new code".
+        return deny("qr_expired" if str(error) == "expired" else "qr_invalid")
+
+    user = db.get(User, user_id)
+    if user is None:
+        return deny("qr_invalid")
+    if not user.is_active:
+        return deny("user_inactive", user)
+
+    # Save the nonce. It is the table's primary key, so if this code was
+    # already used the database refuses it: that is the single-use rule.
+    db.add(UsedQrNonce(nonce=nonce))
+    try:
+        db.flush()
+    except IntegrityError:
+        db.rollback()
+        return deny("qr_already_used", user)
+
+    return record_access(db, method=METHOD_QR, direction=body.direction, user=user, granted=True)

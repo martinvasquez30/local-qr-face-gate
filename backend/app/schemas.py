@@ -92,6 +92,20 @@ class FaceAccessRequest(BaseModel):
     direction: Direction = "in"
 
 
+class QrAccessRequest(BaseModel):
+    """What the access point sends after reading a QR code: the text inside it."""
+
+    token: str = Field(min_length=1, max_length=2000)
+    direction: Direction = "in"
+
+
+class QrIssued(BaseModel):
+    """A new QR code for a user: the text to draw as a QR, and its lifetime."""
+
+    token: str
+    expires_in: int
+
+
 class AccessDecision(BaseModel):
     """The server's answer to the access point. It never includes face data."""
 
@@ -100,6 +114,8 @@ class AccessDecision(BaseModel):
     user_name: str | None = None
     # Distance to the closest enrolled face (shown for the demo and the logs).
     distance: float | None = None
+    # Why a QR code was denied, as a translatable code (e.g. "qr_already_used").
+    reason: str | None = None
 
 
 class AccessEventOut(BaseModel):
