@@ -174,10 +174,9 @@ Development login: `admin@example.com` / `admin123`.
 ### Next steps
 
 1. Progress notes for week 6 (`docs/progress/week-06.md`) and the progress table above.
-2. Test SSO with a real Google OAuth client (`backend/.env`).
-3. Threshold check with a few people, full check with the internet disconnected.
-4. Demo script (5 minutes) and rehearsal.
-5. Extras if there is time: blink check (liveness), CSV export, encrypted descriptors.
+2. Threshold check with a few people, full check with the internet disconnected.
+3. Demo script (5 minutes) and rehearsal.
+4. Extras if there is time: blink check (liveness), CSV export, encrypted descriptors.
 
 ### Open questions
 

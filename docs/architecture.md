@@ -43,7 +43,7 @@ the **access point** (kiosk). Internet is only needed to sign in with SSO.
 | Face enrollment (average of 3 captures, one template per user) | Done (week 6) |
 | Face verification at the access point (`/kiosk`, `POST /access/face`) | Done (week 6) |
 | SSO: backend endpoints (OpenID Connect, Google first) | Done (week 6) |
-| SSO: login button in the frontend | Planned |
+| SSO: login button in the frontend, tested with a real Google OAuth client | Done (week 6) |
 
 ## Design decisions
 

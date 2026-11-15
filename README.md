@@ -187,7 +187,7 @@ values, and register it in `frontend/src/i18n.js` (`LANGUAGE_NAMES` and `resourc
 - [x] Face verification at the access point (`/kiosk`); QR fallback suggested after 3 failures
 - [x] QR code reading at the access point (same camera, "Use a QR code" button)
 - [ ] Match threshold calibrated with test captures (FAR / FRR)
-- [ ] SSO login (OpenID Connect, Google first): backend and frontend done, test with a real Google client pending
+- [x] SSO login with Google (OpenID Connect; tested with a real Google OAuth client)
 - [x] Face model and camera in the browser (`/face-check`)
 - [x] Face enrollment: 3 captures averaged into one template per user (`/users/{id}/face`)
 - [ ] Full flow checked with the internet disconnected
