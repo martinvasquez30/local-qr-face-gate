@@ -17,6 +17,9 @@ function NavBar() {
       <NavLink className="nav-link" to="/users">
         {t("nav.users")}
       </NavLink>
+      <NavLink className="nav-link" to="/history">
+        {t("nav.history")}
+      </NavLink>
       <NavLink className="nav-link" to="/kiosk">
         {t("nav.kiosk")}
       </NavLink>

@@ -5,6 +5,7 @@ import LanguageSwitcher from "./components/LanguageSwitcher.jsx";
 import NavBar from "./components/NavBar.jsx";
 import EnrollFacePage from "./pages/EnrollFacePage.jsx";
 import FaceCheckPage from "./pages/FaceCheckPage.jsx";
+import HistoryPage from "./pages/HistoryPage.jsx";
 import HomePage from "./pages/HomePage.jsx";
 import KioskPage from "./pages/KioskPage.jsx";
 import LoginPage from "./pages/LoginPage.jsx";
@@ -40,6 +41,7 @@ function App() {
           path="/users/:userId/face"
           element={isAdmin ? <EnrollFacePage /> : <Navigate to="/" replace />}
         />
+        <Route path="/history" element={isAdmin ? <HistoryPage /> : <Navigate to="/" replace />} />
         <Route
           path="/users/:userId/qr"
           element={isAdmin ? <QrPage /> : <Navigate to="/" replace />}

@@ -10,7 +10,8 @@
     "label": "Navegación principal",
     "home": "Inicio",
     "users": "Usuarios",
-    "kiosk": "Punto de acceso"
+    "kiosk": "Punto de acceso",
+    "history": "Historial"
   },
   "login": {
     "title": "Iniciar sesión",
@@ -65,7 +66,8 @@
     "invalid_terminal_key": "La clave de terminal no es válida. Revisa la configuración del punto de acceso.",
     "qr_expired": "El código QR venció. Pide uno nuevo.",
     "qr_invalid": "El código QR no es válido.",
-    "qr_already_used": "Este código QR ya se usó."
+    "qr_already_used": "Este código QR ya se usó.",
+    "invalid_date_range": "La fecha \"desde\" es posterior a la fecha \"hasta\"."
   },
   "kiosk": {
     "title": "Punto de acceso",
@@ -149,5 +151,32 @@
     "expiresIn": "Vence en {{seconds}} s · se renueva solo",
     "help": "Muéstralo a la cámara del punto de acceso; sirve una foto en el celular. Funciona una sola vez.",
     "renew": "Generar otro"
+  },
+  "history": {
+    "title": "Historial de accesos",
+    "subtitle": "Cada intento en el punto de acceso, aceptado o rechazado. Se filtra por días y por persona.",
+    "from": "Desde",
+    "to": "Hasta",
+    "user": "Persona",
+    "allUsers": "Todas las personas",
+    "summary": "Intentos: {{total}} · Aceptados: {{granted}} · Rechazados: {{denied}}",
+    "empty": "No hay intentos con estos filtros.",
+    "unknownUser": "Desconocido",
+    "fields": {
+      "when": "Fecha y hora",
+      "user": "Persona",
+      "method": "Método",
+      "result": "Resultado",
+      "direction": "Puerta",
+      "distance": "Distancia"
+    },
+    "method": {
+      "face": "Rostro",
+      "qr": "Código QR"
+    },
+    "result": {
+      "granted": "Aceptado",
+      "denied": "Rechazado"
+    }
   }
 }

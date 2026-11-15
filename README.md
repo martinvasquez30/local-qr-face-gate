@@ -181,7 +181,7 @@ values, and register it in `frontend/src/i18n.js` (`LANGUAGE_NAMES` and `resourc
 - [x] Multi-language support (Spanish / English)
 - [x] User management (admin portal)
 - [x] Simplified architecture: one local server, no cloud services
-- [ ] Access log (every attempt) and reports by date and user
+- [x] Access log (every attempt) and history page with date and user filters (`/history`)
 - [x] Dynamic QR codes (HMAC-signed with their own key, valid 60 s, single use): `/users/{id}/qr`
 - [ ] Face enrollment (descriptors only, no photos)
 - [x] Face verification at the access point (`/kiosk`); QR fallback suggested after 3 failures
@@ -206,6 +206,7 @@ has been reviewed and studied by the author.
 | 2026-11-08 | Claude Code (Anthropic) | Architecture and complexity review, simplified architecture docs, week 3 progress notes and documentation updates, access events table and filtered list API with pytest tests |
 | 2026-11-13 | Claude Code (Anthropic) | SSO login in the backend (OpenID Connect with Authlib), pytest tests with a faked provider, SSO setup docs |
 | 2026-11-14 | Claude Code (Anthropic) | SSO sign-in button and token handling in the frontend; face model loading with face-api, camera component, camera check page and model copy script; face enrollment API (pytest tests) and capture page; removal of the `ml/` folder; face verification at the access point (`POST /access/face` with pytest tests, `/kiosk` page); dynamic single-use QR codes (issue and check endpoints with pytest tests, QR page, QR reading at the kiosk) |
+| 2026-11-15 | Claude Code (Anthropic) | Access history page (`/history`) with date and user filters and a shared table style |
 
 ### Third-party libraries
 

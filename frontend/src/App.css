@@ -457,7 +457,7 @@ a.button {
   font-size: 0.875rem;
 }
 
-/* --- Users page --- */
+/* --- Users page and shared data tables --- */
 
 .card--wide {
   max-width: 960px;
@@ -501,21 +501,21 @@ a.button {
   text-align: center;
 }
 
-.users-table {
+.data-table {
   width: 100%;
   margin: 8px 0 32px;
   border-collapse: collapse;
 }
 
-.users-table th,
-.users-table td {
+.data-table th,
+.data-table td {
   padding: 10px 8px;
   text-align: left;
   border-bottom: 1px solid var(--color-border);
   vertical-align: middle;
 }
 
-.users-table th {
+.data-table th {
   font-size: 0.875rem;
   color: var(--color-muted);
   font-weight: 500;
@@ -563,6 +563,40 @@ a.button {
   background: var(--color-bg);
 }
 
+/* --- History page --- */
+
+.history-filters {
+  display: grid;
+  gap: 12px 16px;
+  margin-bottom: 16px;
+}
+
+@media (min-width: 640px) {
+  .history-filters {
+    grid-template-columns: 1fr 1fr 2fr;
+  }
+}
+
+.history-summary {
+  margin: 0 0 8px;
+  color: var(--color-muted);
+}
+
+.badge--granted,
+.badge--denied {
+  margin-left: 0;
+}
+
+.badge--granted {
+  color: var(--color-online);
+  background: var(--color-success-bg);
+}
+
+.badge--denied {
+  color: var(--color-error);
+  background: var(--color-error-bg);
+}
+
 .button--small {
   min-height: 36px;
   padding: 6px 12px;
@@ -600,7 +634,7 @@ a.button {
 /* Below 640px each row becomes a card, with the column name (data-label)
    next to each value, so there is never a horizontal scroll. */
 @media (max-width: 639px) {
-  .users-table thead {
+  .data-table thead {
     position: absolute;
     width: 1px;
     height: 1px;
@@ -608,21 +642,21 @@ a.button {
     clip: rect(0 0 0 0);
   }
 
-  .users-table,
-  .users-table tbody,
-  .users-table tr,
-  .users-table td {
+  .data-table,
+  .data-table tbody,
+  .data-table tr,
+  .data-table td {
     display: block;
   }
 
-  .users-table tr {
+  .data-table tr {
     margin-bottom: 12px;
     padding: 8px 12px;
     border: 1px solid var(--color-border);
     border-radius: var(--radius-small);
   }
 
-  .users-table td {
+  .data-table td {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -632,7 +666,7 @@ a.button {
     text-align: right;
   }
 
-  .users-table td[data-label]::before {
+  .data-table td[data-label]::before {
     content: attr(data-label);
     flex-shrink: 0;
     color: var(--color-muted);

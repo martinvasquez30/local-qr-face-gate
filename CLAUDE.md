@@ -91,7 +91,7 @@ backend/
   tests/               pytest; conftest.py gives each test an in-memory SQLite database
 frontend/
   src/main.jsx         Entry point: loads i18n, wraps the app in BrowserRouter and AuthProvider
-  src/App.jsx          Layout, screen selection (loading / login) and routes (/, /users, /face-check)
+  src/App.jsx          Layout, screen selection (loading / login) and routes (/, /users, /history, /kiosk, ...)
   src/i18n.js          i18next setup and supported languages
   src/locales/         es.json, en.json (own translation files)
   src/api.js           fetch wrapper; errors become ApiError with a stable code
@@ -100,11 +100,13 @@ frontend/
   src/pages/           LoginPage (SSO button + dev password form), HomePage, UsersPage,
                        FaceCheckPage (camera and face model check),
                        EnrollFacePage (/users/:userId/face: consent, 3 captures, save),
-                       KioskPage (/kiosk: no user login; terminal key + entry/exit setup)
+                       KioskPage (/kiosk: no user login; terminal key + entry/exit setup),
+                       HistoryPage (/history: day range + user filters, summary)
   src/kiosk/           kioskApi.js: checkFace, checkQr (send X-Terminal-Key);
                        qrScanner.js: readQrFromVideo (jsQR on the camera picture)
                        (QrPage: /users/:userId/qr, renews the code when it expires)
   src/users/           CreateUserForm and usersApi (calls to /users)
+  src/history/         historyApi.js: listAccessEvents, local day -> UTC moment helpers
   src/face/            faceModel.js: loads face-api lazily, getDescriptor(video) -> 128 numbers
   scripts/             copy-models.mjs: copies the face model weights to public/models
                        (git-ignored) before `npm run dev` / `npm run build`
@@ -171,11 +173,10 @@ Development login: `admin@example.com` / `admin123`.
 
 ### Next steps
 
-1. History / reports page (`/history`) on top of `GET /access-events`, with date and
-   user filters. Face recognition and QR codes are done.
+1. Progress notes for week 6 (`docs/progress/week-06.md`) and the progress table above.
 2. Test SSO with a real Google OAuth client (`backend/.env`).
 3. Threshold check with a few people, full check with the internet disconnected.
-4. Progress notes for week 6 (`docs/progress/week-06.md`) and the progress table above.
+4. Demo script (5 minutes) and rehearsal.
 5. Extras if there is time: blink check (liveness), CSV export, encrypted descriptors.
 
 ### Open questions

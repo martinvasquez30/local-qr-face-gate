@@ -100,7 +100,7 @@ function UsersPage() {
       ) : visibleUsers.length === 0 ? (
         <p className="empty">{users.length === 0 ? t("users.empty") : t("users.noMatches")}</p>
       ) : (
-        <table className="users-table">
+        <table className="data-table">
           <thead>
             <tr>
               <th scope="col">{t("users.fields.name")}</th>

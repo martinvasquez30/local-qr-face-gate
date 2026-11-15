@@ -10,7 +10,8 @@
     "label": "Main navigation",
     "home": "Home",
     "users": "Users",
-    "kiosk": "Access point"
+    "kiosk": "Access point",
+    "history": "History"
   },
   "login": {
     "title": "Sign in",
@@ -65,7 +66,8 @@
     "invalid_terminal_key": "The terminal key is not valid. Check the access point settings.",
     "qr_expired": "The QR code has expired. Ask for a new one.",
     "qr_invalid": "The QR code is not valid.",
-    "qr_already_used": "This QR code was already used."
+    "qr_already_used": "This QR code was already used.",
+    "invalid_date_range": "The \"from\" date is after the \"to\" date."
   },
   "kiosk": {
     "title": "Access point",
@@ -149,5 +151,32 @@
     "expiresIn": "Expires in {{seconds}} s · renews by itself",
     "help": "Show it to the access point camera; a photo on a phone works. It works only once.",
     "renew": "Create another"
+  },
+  "history": {
+    "title": "Access history",
+    "subtitle": "Every attempt at the access point, granted or denied. Filter by days and by person.",
+    "from": "From",
+    "to": "To",
+    "user": "Person",
+    "allUsers": "Everyone",
+    "summary": "Attempts: {{total}} · Granted: {{granted}} · Denied: {{denied}}",
+    "empty": "No attempts match these filters.",
+    "unknownUser": "Unknown",
+    "fields": {
+      "when": "Date and time",
+      "user": "Person",
+      "method": "Method",
+      "result": "Result",
+      "direction": "Door",
+      "distance": "Distance"
+    },
+    "method": {
+      "face": "Face",
+      "qr": "QR code"
+    },
+    "result": {
+      "granted": "Granted",
+      "denied": "Denied"
+    }
   }
 }

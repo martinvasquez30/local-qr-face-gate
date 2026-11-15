@@ -36,7 +36,8 @@ the **access point** (kiosk). Internet is only needed to sign in with SSO.
 | Temporary email/password login | Done (week 2), replaced by SSO later |
 | Spanish / English UI | Done (week 2) |
 | Access log: `access_events` table and admin list with filters | Done (week 5) |
-| Writing events at the access point, reports page | Planned |
+| Writing events at the access point (face and QR) | Done (week 6) |
+| History page with day range and user filters (`/history`) | Done (week 6) |
 | Dynamic QR codes: issue (`/users/{id}/qr`) and check at the kiosk (`POST /access/qr`) | Done (week 6) |
 | Face model and camera in the browser | Done (week 6) |
 | Face enrollment (average of 3 captures, one template per user) | Done (week 6) |
