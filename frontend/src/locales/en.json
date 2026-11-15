@@ -53,7 +53,20 @@
     "invalid_input": "Check the data you entered: some field is not valid.",
     "sso_not_allowed": "This account does not have administrator access. Ask an administrator to add you with this email.",
     "sso_failed": "Sign-in could not be completed. Please try again.",
-    "sso_not_configured": "Single sign-on is not set up on the server yet."
+    "sso_not_configured": "Single sign-on is not set up on the server yet.",
+    "no_face": "No face was found. Look straight at the camera.",
+    "multiple_faces": "More than one face is visible. Only one person should be in front of the camera.",
+    "camera_denied": "The browser did not allow the camera. Allow it in the site settings and reload.",
+    "camera_unavailable": "The camera could not be opened. Check that no other app is using it and that the page is on localhost.",
+    "face_model_failed": "The face model could not be loaded."
+  },
+  "faceCheck": {
+    "title": "Camera check",
+    "subtitle": "Checks that the camera and the face model work. The image is not saved or sent anywhere.",
+    "loadingModel": "Loading face model…",
+    "check": "Check",
+    "checking": "Analyzing…",
+    "result": "Face found: a descriptor of {{length}} numbers in {{ms}} ms ({{preview}}, …)."
   },
   "users": {
     "title": "Users",

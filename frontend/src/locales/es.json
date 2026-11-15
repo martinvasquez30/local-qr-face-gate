@@ -53,7 +53,20 @@
     "invalid_input": "Revisa los datos ingresados: algún campo no es válido.",
     "sso_not_allowed": "Esta cuenta no tiene acceso de administrador. Pide a un administrador que te agregue con este correo.",
     "sso_failed": "No se pudo completar el inicio de sesión. Inténtalo de nuevo.",
-    "sso_not_configured": "El inicio de sesión único aún no está configurado en el servidor."
+    "sso_not_configured": "El inicio de sesión único aún no está configurado en el servidor.",
+    "no_face": "No se encontró ningún rostro. Mira de frente a la cámara.",
+    "multiple_faces": "Se ve más de un rostro. Solo debe haber una persona frente a la cámara.",
+    "camera_denied": "El navegador no permitió usar la cámara. Actívala en la configuración del sitio y recarga.",
+    "camera_unavailable": "No se pudo abrir la cámara. Revisa que otra aplicación no la esté usando y que la página esté en localhost.",
+    "face_model_failed": "No se pudo cargar el modelo facial."
+  },
+  "faceCheck": {
+    "title": "Prueba de cámara",
+    "subtitle": "Comprueba que la cámara y el modelo facial funcionan. La imagen no se guarda ni se envía.",
+    "loadingModel": "Cargando el modelo facial…",
+    "check": "Probar",
+    "checking": "Analizando…",
+    "result": "Rostro detectado: descriptor de {{length}} números en {{ms}} ms ({{preview}}, …)."
   },
   "users": {
     "title": "Usuarios",

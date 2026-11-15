@@ -3,6 +3,7 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import { useAuth } from "./auth/AuthContext.jsx";
 import LanguageSwitcher from "./components/LanguageSwitcher.jsx";
 import NavBar from "./components/NavBar.jsx";
+import FaceCheckPage from "./pages/FaceCheckPage.jsx";
 import HomePage from "./pages/HomePage.jsx";
 import LoginPage from "./pages/LoginPage.jsx";
 import UsersPage from "./pages/UsersPage.jsx";
@@ -28,6 +29,10 @@ function App() {
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/users" element={isAdmin ? <UsersPage /> : <Navigate to="/" replace />} />
+        <Route
+          path="/face-check"
+          element={isAdmin ? <FaceCheckPage /> : <Navigate to="/" replace />}
+        />
         {/* Unknown URLs go back to the home page. */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

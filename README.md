@@ -151,6 +151,7 @@ All variables are optional in development. The easiest way to set them is a
 | `SESSION_SECRET` | backend | random on each start | Signs the short-lived cookie used during the SSO sign-in. |
 | `FRONTEND_URL` | backend | `http://localhost:5173` | Where the browser is sent after SSO. |
 | `VITE_API_BASE_URL` | frontend | `http://localhost:8000` | Backend URL. Copy `frontend/.env.example` to `frontend/.env` to change it. |
+| `VITE_SSO_PROVIDER_NAME` | frontend | `Google` | Name on the SSO button. Must match the provider set in the backend. |
 
 To generate a random secret for `TOKEN_SECRET` or `SESSION_SECRET`:
 
@@ -189,7 +190,8 @@ See [`ml/README.md`](ml/README.md).
 - [ ] Face enrollment (descriptors only, no photos)
 - [ ] Face verification at the access point, with QR fallback
 - [ ] Match threshold calibrated with test captures (FAR / FRR)
-- [ ] SSO login (OpenID Connect, Google first): backend done, frontend button next
+- [ ] SSO login (OpenID Connect, Google first): backend and frontend done, test with a real Google client pending
+- [ ] Face model and camera in the browser: done (`/face-check`); enrollment and verification next
 - [ ] Full flow checked with the internet disconnected
 - [ ] Liveness detection (anti-spoofing), stretch goal
 
@@ -205,6 +207,7 @@ has been reviewed and studied by the author.
 | 2026-10-25 | Claude Code (Anthropic) | Planning and implementation of the SQLite database layer and users API (backend), the users management page with routing (frontend), translations, styles and pytest tests |
 | 2026-11-08 | Claude Code (Anthropic) | Architecture and complexity review, simplified architecture docs, week 3 progress notes and documentation updates, access events table and filtered list API with pytest tests |
 | 2026-11-13 | Claude Code (Anthropic) | SSO login in the backend (OpenID Connect with Authlib), pytest tests with a faked provider, SSO setup docs |
+| 2026-11-14 | Claude Code (Anthropic) | SSO sign-in button and token handling in the frontend; face model loading with face-api, camera component, camera check page and model copy script |
 
 ### Third-party libraries
 
@@ -223,6 +226,7 @@ has been reviewed and studied by the author.
 | [i18next](https://www.i18next.com/) | Translation engine (with our own translation files) | MIT |
 | [react-i18next](https://react.i18next.com/) | React bindings for i18next (`useTranslation`) | MIT |
 | [React Router](https://reactrouter.com/) (`react-router-dom`) | Page routes (`/`, `/users`) and navigation links | MIT |
+| [@vladmandic/face-api](https://github.com/vladmandic/face-api) 1.7.15 | Face detection and 128-number face descriptors in the browser (includes TensorFlow.js and the pre-trained weights: SSD MobileNet v1, 68-point landmarks, face recognition net). Repository archived since 2024; the version is pinned. | MIT |
 
 ## Author
 

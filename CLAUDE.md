@@ -83,14 +83,18 @@ backend/
   tests/               pytest; conftest.py gives each test an in-memory SQLite database
 frontend/
   src/main.jsx         Entry point: loads i18n, wraps the app in BrowserRouter and AuthProvider
-  src/App.jsx          Layout, screen selection (loading / login) and routes (/, /users)
+  src/App.jsx          Layout, screen selection (loading / login) and routes (/, /users, /face-check)
   src/i18n.js          i18next setup and supported languages
   src/locales/         es.json, en.json (own translation files)
   src/api.js           fetch wrapper; errors become ApiError with a stable code
   src/auth/            AuthContext and useAuth()
-  src/components/      LanguageSwitcher, BackendStatus, NavBar, ErrorMessage
-  src/pages/           LoginPage, HomePage, UsersPage
+  src/components/      LanguageSwitcher, BackendStatus, NavBar, ErrorMessage, Camera
+  src/pages/           LoginPage (SSO button + dev password form), HomePage, UsersPage,
+                       FaceCheckPage (camera and face model check)
   src/users/           CreateUserForm and usersApi (calls to /users)
+  src/face/            faceModel.js: loads face-api lazily, getDescriptor(video) -> 128 numbers
+  scripts/             copy-models.mjs: copies the face model weights to public/models
+                       (git-ignored) before `npm run dev` / `npm run build`
 ml/                    Face match threshold calibration (README describes the steps)
 docs/
   architecture.md      Design and decisions
@@ -155,9 +159,10 @@ Development login: `admin@example.com` / `admin123`.
 
 ### Next steps
 
-1. SSO in the frontend: "Sign in with Google" button; `AuthContext.jsx` reads `#token`
-   or `#error` on load (backend done).
-2. Face model and camera, face enrollment, verification at the access point.
+1. Face enrollment (`face_templates`, `/users/{id}/faces`, capture page), then
+   verification at the access point (`POST /access/face`, `/kiosk`). Model and camera
+   are done (`src/face/faceModel.js`, `Camera.jsx`).
+2. Test SSO with a real Google OAuth client (`backend/.env`).
 3. Dynamic QR codes: issue (admin) and check at the access point (single use); each
    check writes an `access_events` row.
 4. History / reports page in the frontend on top of `GET /access-events`.

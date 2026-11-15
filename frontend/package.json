@@ -4,11 +4,15 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
+    "copy-models": "node scripts/copy-models.mjs",
+    "predev": "npm run copy-models",
     "dev": "vite",
+    "prebuild": "npm run copy-models",
     "build": "vite build",
     "preview": "vite preview"
   },
   "dependencies": {
+    "@vladmandic/face-api": "1.7.15",
     "i18next": "^26.5.2",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
