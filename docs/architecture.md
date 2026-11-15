@@ -38,7 +38,9 @@ the **access point** (kiosk). Internet is only needed to sign in with SSO.
 | Access log: `access_events` table and admin list with filters | Done (week 5) |
 | Writing events at the access point, reports page | Planned |
 | Dynamic QR codes | Planned |
-| Face enrollment and verification | Planned |
+| Face model and camera in the browser | Done (week 6) |
+| Face enrollment (average of 3 captures, one template per user) | Done (week 6) |
+| Face verification at the access point | Planned |
 | SSO: backend endpoints (OpenID Connect, Google first) | Done (week 6) |
 | SSO: login button in the frontend | Planned |
 
@@ -83,8 +85,10 @@ Letting the wrong person in (false acceptance) is worse than rejecting the right
 therefore chosen to keep the false acceptance rate (FAR) very low, even if the false
 rejection rate (FRR) goes up.
 
-It is calibrated with test captures of a few people: distances between captures of the
-same person and of different people. See [`../ml/README.md`](../ml/README.md).
+It starts at 0.5, stricter than the library's usual 0.6, and is then checked with test
+attempts of a few people: the access log stores the distance of every face attempt, so
+the distances of the same person and of different people can be compared. The result
+is written down in the docs. A large evaluation on a public dataset is out of scope.
 
 ### 4. Store descriptors, not photos
 
@@ -199,7 +203,7 @@ SQLite in development, through SQLAlchemy.
 | Table | Main fields | Status |
 |---|---|---|
 | `users` | id, email, name, role (`admin` / `member`), is_active, password_hash (admins only), created_at, updated_at | Done |
-| `face_templates` | id, user_id, descriptor (list of numbers), created_at | Planned |
+| `face_templates` | id, user_id (unique: one per user), descriptor (average of the captures, 128 numbers), created_at | Done |
 | `access_events` | id, user_id (empty if nobody was recognized), method (`face` / `qr`), result (`granted` / `denied`), direction (`in` / `out`), distance (face only), created_at | Done |
 | `used_qr_nonces` | nonce (unique), used_at | Planned |
 

@@ -62,7 +62,8 @@ Full design in `docs/architecture.md`. In short:
   chosen with `SSO_METADATA_URL`). After the provider confirms the email of an active
   admin, the backend issues its own token and redirects to `FRONTEND_URL/#token=...` (or
   `#error=<code>`), so `get_current_user` does not change.
-- **ML** (`ml/`): only threshold calibration (FAR/FRR) with test captures.
+- **No ML folder**: the threshold starts at 0.5 and is checked with a few test attempts
+  (distances stored in `access_events`). No notebooks, ONNX or model comparison.
 - The original distributed design is kept in `docs/architecture.md` under
   "Future evolution". Do not build it unless asked.
 
@@ -79,6 +80,8 @@ backend/
   app/models.py        Database tables (User, AccessEvent), allowed values, as_utc()
   app/schemas.py       Pydantic shapes the API receives and returns (users, access events)
   app/users.py         Admin-only /users endpoints (list, create, get, update)
+  app/faces.py         Admin-only GET/PUT/DELETE /users/{id}/face (average of captures;
+                       the numbers are never returned)
   app/access_events.py Admin-only GET /access-events (filters: start, end, user_id)
   tests/               pytest; conftest.py gives each test an in-memory SQLite database
 frontend/
@@ -90,12 +93,12 @@ frontend/
   src/auth/            AuthContext and useAuth()
   src/components/      LanguageSwitcher, BackendStatus, NavBar, ErrorMessage, Camera
   src/pages/           LoginPage (SSO button + dev password form), HomePage, UsersPage,
-                       FaceCheckPage (camera and face model check)
+                       FaceCheckPage (camera and face model check),
+                       EnrollFacePage (/users/:userId/face: consent, 3 captures, save)
   src/users/           CreateUserForm and usersApi (calls to /users)
   src/face/            faceModel.js: loads face-api lazily, getDescriptor(video) -> 128 numbers
   scripts/             copy-models.mjs: copies the face model weights to public/models
                        (git-ignored) before `npm run dev` / `npm run build`
-ml/                    Face match threshold calibration (README describes the steps)
 docs/
   architecture.md      Design and decisions
   questions-for-po.md  Open questions for the Product Owner
@@ -159,14 +162,14 @@ Development login: `admin@example.com` / `admin123`.
 
 ### Next steps
 
-1. Face enrollment (`face_templates`, `/users/{id}/faces`, capture page), then
-   verification at the access point (`POST /access/face`, `/kiosk`). Model and camera
-   are done (`src/face/faceModel.js`, `Camera.jsx`).
+1. Verification at the access point: `POST /access/face` (terminal key, threshold 0.5,
+   margin over the second best, writes `access_events`) and `/kiosk` page with QR
+   fallback after 3 failures or ~10 s. Enrollment is done.
 2. Test SSO with a real Google OAuth client (`backend/.env`).
 3. Dynamic QR codes: issue (admin) and check at the access point (single use); each
    check writes an `access_events` row.
 4. History / reports page in the frontend on top of `GET /access-events`.
-5. Threshold calibration, full check with the internet disconnected.
+5. Threshold check with a few people, full check with the internet disconnected.
 
 ### Open questions
 

@@ -44,7 +44,6 @@ See [`docs/architecture.md`](docs/architecture.md) for the full design.
 |---|---|---|
 | UI (admin portal, enrollment, access point) | React · Vite · React Router | Responsive single-page app |
 | Face detection and descriptor | Pre-trained model in the browser (candidate: `@vladmandic/face-api`), files served locally | Runs locally, photos never leave the browser |
-| Threshold calibration | Python · scikit-learn · Jupyter | Match threshold chosen with data (FAR / FRR) |
 | Server | Python · FastAPI | Users, face matching, QR codes, access log and reports |
 | Database | SQLite through SQLAlchemy | No setup, one local file |
 | QR codes | HMAC-signed tokens (Python standard library) | Created and checked by the local server, no internet needed |
@@ -60,10 +59,6 @@ access-control/
 │   └── tests/
 ├── frontend/         Admin portal, enrollment and access point UI (React + Vite)
 │   └── src/
-├── ml/               Face match threshold calibration (Python)
-│   ├── notebooks/
-│   ├── src/
-│   └── reports/
 └── docs/             Architecture notes and open questions
 ```
 
@@ -174,10 +169,6 @@ The UI is available in **Spanish** and **English**, using our own translation fi
 To add a language, copy `es.json` to a new file (for example `pt.json`), translate the
 values, and register it in `frontend/src/i18n.js` (`LANGUAGE_NAMES` and `resources`).
 
-### ML pipeline
-
-See [`ml/README.md`](ml/README.md).
-
 ## Roadmap
 
 - [x] Project scaffold, documentation and health check
@@ -191,7 +182,8 @@ See [`ml/README.md`](ml/README.md).
 - [ ] Face verification at the access point, with QR fallback
 - [ ] Match threshold calibrated with test captures (FAR / FRR)
 - [ ] SSO login (OpenID Connect, Google first): backend and frontend done, test with a real Google client pending
-- [ ] Face model and camera in the browser: done (`/face-check`); enrollment and verification next
+- [x] Face model and camera in the browser (`/face-check`)
+- [x] Face enrollment: 3 captures averaged into one template per user (`/users/{id}/face`)
 - [ ] Full flow checked with the internet disconnected
 - [ ] Liveness detection (anti-spoofing), stretch goal
 
@@ -207,7 +199,7 @@ has been reviewed and studied by the author.
 | 2026-10-25 | Claude Code (Anthropic) | Planning and implementation of the SQLite database layer and users API (backend), the users management page with routing (frontend), translations, styles and pytest tests |
 | 2026-11-08 | Claude Code (Anthropic) | Architecture and complexity review, simplified architecture docs, week 3 progress notes and documentation updates, access events table and filtered list API with pytest tests |
 | 2026-11-13 | Claude Code (Anthropic) | SSO login in the backend (OpenID Connect with Authlib), pytest tests with a faked provider, SSO setup docs |
-| 2026-11-14 | Claude Code (Anthropic) | SSO sign-in button and token handling in the frontend; face model loading with face-api, camera component, camera check page and model copy script |
+| 2026-11-14 | Claude Code (Anthropic) | SSO sign-in button and token handling in the frontend; face model loading with face-api, camera component, camera check page and model copy script; face enrollment API (pytest tests) and capture page; removal of the `ml/` folder |
 
 ### Third-party libraries
 
