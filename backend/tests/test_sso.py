@@ -3,6 +3,7 @@
 import dataclasses
 from urllib.parse import parse_qs, urlsplit
 
+import httpx
 import pytest
 
 from app import auth
@@ -75,6 +76,17 @@ def test_login_without_sso_configured_goes_back_with_an_error(client, monkeypatc
     assert fragment(response) == {"error": "sso_not_configured"}
 
 
+def test_login_without_internet_goes_back_with_an_error(client, sso_on, monkeypatch):
+    async def authorize_redirect(_request, _redirect_uri):
+        raise httpx.ConnectError("no internet")
+
+    monkeypatch.setattr(auth.oauth.sso, "authorize_redirect", authorize_redirect)
+
+    response = client.get("/auth/sso/login", follow_redirects=False)
+
+    assert fragment(response) == {"error": "sso_unavailable"}
+
+
 # --- /auth/sso/callback -----------------------------------------------------
 
 
@@ -118,6 +130,17 @@ def test_an_error_from_the_provider_goes_back_with_an_error(client, sso_on):
     response = callback(client, "?error=access_denied")
 
     assert fragment(response) == {"error": "sso_failed"}
+
+
+def test_a_provider_that_cannot_be_reached_goes_back_with_an_error(client, sso_on, monkeypatch):
+    async def authorize_access_token(_request):
+        raise httpx.ConnectError("no internet")
+
+    monkeypatch.setattr(auth.oauth.sso, "authorize_access_token", authorize_access_token)
+
+    response = callback(client)
+
+    assert fragment(response) == {"error": "sso_unavailable"}
 
 
 def test_an_answer_this_browser_did_not_ask_for_is_rejected(client, sso_on):

@@ -160,11 +160,20 @@ How the access point checks a face (done in week 6):
    `FACE_MATCH_MARGIN` (0.05) smaller than the second closest, so two similar people are
    never confused.
 3. Every attempt is written to `access_events` with the distance, through one function
-   (`record_access`) that the QR check will reuse. The kiosk only receives "granted" with
+   (`record_access`) that the QR check also uses. The kiosk only receives "granted" with
    the person's name, or "denied".
-4. After a person gets in, the kiosk waits until they leave the camera before checking
+4. A denied attempt also stores **why**: `face_no_match` (the closest face is beyond the
+   threshold), `face_ambiguous` (two people almost equally close) or `no_faces_enrolled`.
+   The history page shows it to admins; the kiosk still only says "not recognized",
+   because telling a stranger why would only help them try again.
+5. After a person gets in, the kiosk waits until they leave the camera before checking
    again, so one visit is not logged many times. After 3 denied attempts in a row it
    suggests asking for a QR code.
+
+Enrollment rejects a face that already belongs to another user (`face_already_enrolled`,
+closer than the threshold). In the first tests the same face was enrolled for two users,
+and the margin rule turned that person away almost every time: 36 of 38 denied attempts
+were under the threshold. The stored reasons make this kind of problem visible.
 
 Known limitation: there is no liveness check, so a photo of an enrolled person shown on
 a phone can be accepted (measured: 0.42 for a photo vs 0.35 for the real face).
@@ -212,7 +221,8 @@ How SSO works (backend done, with Authlib):
    that email.
 5. It then issues **the same token as the password login** and redirects to
    `FRONTEND_URL/#token=...`. On any problem it redirects to `FRONTEND_URL/#error=<code>`
-   (`sso_not_configured`, `sso_failed` or `sso_not_allowed`). The part after `#` stays in
+   (`sso_not_configured`, `sso_failed`, `sso_not_allowed`, or `sso_unavailable` when the
+   provider cannot be reached, for example without internet). The part after `#` stays in
    the browser and is never sent to a server, so the token does not end up in logs.
 
 Because the backend keeps issuing its own token, `get_current_user` and the protected
@@ -239,10 +249,15 @@ SQLite in development, through SQLAlchemy.
 |---|---|---|
 | `users` | id, email, name, role (`admin` / `member`), is_active, password_hash (admins only), created_at, updated_at | Done |
 | `face_templates` | id, user_id (unique: one per user), descriptor (average of the captures, 128 numbers), created_at | Done |
-| `access_events` | id, user_id (empty if nobody was recognized), method (`face` / `qr`), result (`granted` / `denied`), direction (`in` / `out`), distance (face only), created_at | Done |
+| `access_events` | id, user_id (empty if nobody was recognized), method (`face` / `qr`), result (`granted` / `denied`), direction (`in` / `out`), distance (face only), reason (denied only), created_at | Done |
 | `used_qr_nonces` | nonce (primary key, so it is unique), used_at | Done |
 
 Users are deactivated, never deleted, because access events point to them.
+
+`create_all` only creates missing tables. When a model gets a new column that may be
+empty, `init_db` adds it to the existing SQLite file with `ALTER TABLE ... ADD COLUMN`
+(`_add_new_columns`), so the data is kept. Renaming or removing a column still needs the
+file to be deleted; a migrations tool (Alembic) is not worth it for this project.
 
 ## Future evolution
 

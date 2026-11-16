@@ -78,8 +78,8 @@ def test_a_qr_code_works_only_once(client, db, admin_headers, member):
     assert second.json()["result"] == "denied"
     assert second.json()["reason"] == "qr_already_used"
     # The second attempt is also logged, with the user it belongs to.
-    assert [(e.user_id, e.result) for e in logged_events(db)] == [
-        (member.id, "granted"), (member.id, "denied")
+    assert [(e.user_id, e.result, e.reason) for e in logged_events(db)] == [
+        (member.id, "granted", None), (member.id, "denied", "qr_already_used")
     ]
 
 

@@ -38,37 +38,44 @@ MARGIN = 0.05
 
 
 def test_nobody_enrolled_means_no_match():
-    assert find_match(descriptor(0.1), [], THRESHOLD, MARGIN) == (None, None)
+    assert find_match(descriptor(0.1), [], THRESHOLD, MARGIN) == (None, None, "no_faces_enrolled")
 
 
 def test_a_close_face_matches():
-    user_id, distance = find_match(descriptor(0.1), [(7, descriptor(0.1))], THRESHOLD, MARGIN)
+    user_id, distance, reason = find_match(
+        descriptor(0.1), [(7, descriptor(0.1))], THRESHOLD, MARGIN
+    )
 
     assert user_id == 7
     assert distance == pytest.approx(0.0)
+    assert reason is None
 
 
 def test_a_face_beyond_the_threshold_does_not_match():
     # Each of the 128 numbers differs by 0.1: distance = sqrt(128 * 0.01) = 1.13.
-    user_id, distance = find_match(descriptor(0.2), [(7, descriptor(0.1))], THRESHOLD, MARGIN)
+    user_id, distance, reason = find_match(
+        descriptor(0.2), [(7, descriptor(0.1))], THRESHOLD, MARGIN
+    )
 
     assert user_id is None
     assert distance == pytest.approx(1.131, abs=0.001)
+    assert reason == "face_no_match"
 
 
 def test_two_almost_equally_close_people_do_not_match():
     # Both are under the threshold, but only 0.011 apart: not enough margin.
     templates = [(7, descriptor(0.100)), (8, descriptor(0.101))]
 
-    user_id, _ = find_match(descriptor(0.100), templates, THRESHOLD, MARGIN)
+    user_id, _, reason = find_match(descriptor(0.100), templates, THRESHOLD, MARGIN)
 
     assert user_id is None
+    assert reason == "face_ambiguous"
 
 
 def test_the_closest_of_two_clearly_different_people_matches():
     templates = [(7, descriptor(0.10)), (8, descriptor(0.50))]
 
-    user_id, _ = find_match(descriptor(0.10), templates, THRESHOLD, MARGIN)
+    user_id, _, _ = find_match(descriptor(0.10), templates, THRESHOLD, MARGIN)
 
     assert user_id == 7
 
@@ -121,6 +128,23 @@ def test_an_unknown_face_is_denied_and_logged_without_a_user(client, db, member)
     assert event.user_id is None
     assert event.result == "denied"
     assert event.distance == pytest.approx(body["distance"], abs=0.001)
+    assert event.reason == "face_no_match"
+
+
+def test_the_reason_is_logged_but_not_told_to_the_kiosk(client, db, member):
+    # The same face enrolled for two people: the kiosk cannot tell them apart.
+    other = User(name="Other", email="other@example.com", role="member")
+    db.add(other)
+    db.commit()
+    add_face(db, member, 0.100)
+    add_face(db, other, 0.101)
+
+    response = check_face(client, 0.100)
+
+    assert response.json()["result"] == "denied"
+    assert response.json()["reason"] is None
+    [event] = logged_events(db)
+    assert event.reason == "face_ambiguous"
 
 
 def test_an_inactive_user_does_not_get_in(client, db, member):

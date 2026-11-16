@@ -108,9 +108,13 @@ class AccessEvent(Base):
     method: Mapped[str] = mapped_column(String(10))  # METHOD_FACE or METHOD_QR
     result: Mapped[str] = mapped_column(String(10))  # RESULT_GRANTED or RESULT_DENIED
     direction: Mapped[str] = mapped_column(String(3))  # DIRECTION_IN or DIRECTION_OUT
-    # Face attempts only: distance to the closest enrolled face. Kept to
-    # calibrate the match threshold later (see ml/README.md).
+    # Face attempts only: distance to the closest enrolled face. Kept to check
+    # the match threshold with real attempts.
     distance: Mapped[float | None] = mapped_column()
+    # Denied attempts only: why, as a translatable code. Face: "face_no_match",
+    # "face_ambiguous" or "no_faces_enrolled". QR: "qr_invalid", "qr_expired",
+    # "qr_already_used" or "user_inactive".
+    reason: Mapped[str | None] = mapped_column(String(30))
     # Stored in UTC, like the user dates. Indexed because reports filter by it.
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=_utc_now, index=True

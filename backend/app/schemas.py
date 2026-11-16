@@ -129,6 +129,8 @@ class AccessEventOut(BaseModel):
     result: str
     direction: str
     distance: float | None
+    # Why a denied attempt was denied, as a translatable code.
+    reason: str | None
     created_at: datetime
 
     @field_validator("created_at")

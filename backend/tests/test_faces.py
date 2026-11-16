@@ -1,8 +1,8 @@
 import pytest
 from sqlalchemy import func, select
 
-from app.models import DESCRIPTOR_LENGTH, FaceTemplate
-from tests.conftest import auth_header, token_for
+from app.models import DESCRIPTOR_LENGTH, FaceTemplate, User
+from tests.conftest import ADMIN_EMAIL, auth_header, token_for
 
 
 def descriptor(value: float) -> list[float]:
@@ -87,6 +87,37 @@ def test_unknown_user_returns_404(client, admin_headers):
 
     assert response.status_code == 404
     assert response.json()["detail"] == "user_not_found"
+
+
+def test_a_face_already_enrolled_for_another_user_is_rejected(client, db, admin_headers, member):
+    admin = db.scalar(select(User).where(User.email == ADMIN_EMAIL))
+    enroll(client, admin_headers, admin.id, [descriptor(0.10)])
+
+    # 0.001 apart in each number: distance 0.011, far below the threshold.
+    response = enroll(client, admin_headers, member.id, [descriptor(0.101)])
+
+    assert response.status_code == 409
+    assert response.json()["detail"] == "face_already_enrolled"
+    assert stored_template(db, member.id) is None
+
+
+def test_a_different_face_can_be_enrolled_next_to_another(client, db, admin_headers, member):
+    admin = db.scalar(select(User).where(User.email == ADMIN_EMAIL))
+    enroll(client, admin_headers, admin.id, [descriptor(0.1)])
+
+    # Distance 1.13, far above the threshold: clearly another person.
+    response = enroll(client, admin_headers, member.id, [descriptor(0.2)])
+
+    assert response.status_code == 200
+
+
+def test_enrolling_again_is_not_blocked_by_the_old_face(client, admin_headers, member):
+    # The user's own earlier face is replaced, not counted as "someone else".
+    enroll(client, admin_headers, member.id, [descriptor(0.1)])
+
+    response = enroll(client, admin_headers, member.id, [descriptor(0.1)])
+
+    assert response.status_code == 200
 
 
 def test_an_inactive_user_cannot_be_enrolled(client, admin_headers, member):

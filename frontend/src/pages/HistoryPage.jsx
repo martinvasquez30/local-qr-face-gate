@@ -130,6 +130,7 @@ function HistoryPage() {
                 <th scope="col">{t("history.fields.result")}</th>
                 <th scope="col">{t("history.fields.direction")}</th>
                 <th scope="col">{t("history.fields.distance")}</th>
+                <th scope="col">{t("history.fields.reason")}</th>
               </tr>
             </thead>
             <tbody>
@@ -158,6 +159,10 @@ function HistoryPage() {
                   </td>
                   <td data-label={t("history.fields.distance")}>
                     {event.distance === null ? "—" : event.distance.toFixed(3)}
+                  </td>
+                  <td data-label={t("history.fields.reason")}>
+                    {/* Events logged before reasons were stored have none. */}
+                    {event.reason ? t(`history.reason.${event.reason}`) : "—"}
                   </td>
                 </tr>
               ))}

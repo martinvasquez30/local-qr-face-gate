@@ -17,7 +17,7 @@ def utc(day: int, hour: int, minute: int = 0) -> datetime:
 
 
 def add_event(db, created_at, user_id=None, method=METHOD_FACE, result=RESULT_GRANTED,
-              distance=None) -> AccessEvent:
+              distance=None, reason=None) -> AccessEvent:
     """Write an event directly in the database, as the access point will do."""
     event = AccessEvent(
         user_id=user_id,
@@ -25,6 +25,7 @@ def add_event(db, created_at, user_id=None, method=METHOD_FACE, result=RESULT_GR
         result=result,
         direction=DIRECTION_IN,
         distance=distance,
+        reason=reason,
         created_at=created_at,
     )
     db.add(event)
@@ -70,7 +71,7 @@ def test_list_is_empty_when_there_are_no_events(client, admin_headers):
 
 def test_events_are_listed_newest_first(client, db, admin_headers, member):
     oldest = add_event(db, utc(8, 10), user_id=member.id, distance=0.35)
-    newest = add_event(db, utc(8, 12), method=METHOD_QR, result=RESULT_DENIED)
+    newest = add_event(db, utc(8, 12), method=METHOD_QR, result=RESULT_DENIED, reason="qr_expired")
     middle = add_event(db, utc(8, 11), user_id=member.id)
 
     response = list_events(client, admin_headers)
@@ -84,6 +85,7 @@ def test_events_are_listed_newest_first(client, db, admin_headers, member):
     assert first["result"] == "denied"
     assert first["direction"] == "in"
     assert first["distance"] is None
+    assert first["reason"] == "qr_expired"
     # Marked as UTC ("Z"), so the browser can show it in local time.
     assert first["created_at"] == "2026-11-08T12:00:00Z"
     assert response.json()[2]["distance"] == 0.35

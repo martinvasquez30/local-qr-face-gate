@@ -76,16 +76,19 @@ backend/
                        password login (/auth/login); /auth/me, get_current_user, require_admin
   app/security.py      PBKDF2 password hashing and HMAC-signed tokens (stdlib only)
   app/config.py        Settings from environment variables, with dev defaults
-  app/database.py      SQLAlchemy engine, get_db (one session per request), init_db + demo admin
+  app/database.py      SQLAlchemy engine, get_db (one session per request), init_db + demo admin,
+                       _add_new_columns (adds new nullable model columns to an existing SQLite file)
   app/models.py        Database tables (User, AccessEvent), allowed values, as_utc()
   app/schemas.py       Pydantic shapes the API receives and returns (users, access events)
   app/users.py         Admin-only /users endpoints (list, create, get, update)
   app/faces.py         Admin-only GET/PUT/DELETE /users/{id}/face (average of captures;
-                       the numbers are never returned)
+                       the numbers are never returned; 409 face_already_enrolled if the face
+                       already belongs to another user)
   app/access_events.py Admin-only GET /access-events (filters: start, end, user_id)
   app/access.py        Access point: require_terminal (X-Terminal-Key), POST /access/face,
-                       find_match (threshold + margin), POST /access/qr (signature, expiry,
-                       single use), record_access (writes access_events for both)
+                       find_match (threshold + margin, returns a denial reason), POST /access/qr
+                       (signature, expiry, single use), record_access (writes access_events,
+                       with the reason, for both; the kiosk is not told face reasons)
   app/qr.py            Admin-only POST /users/{id}/qr; create_qr_token / read_qr_token
                        ("<user_id>:<nonce>" signed with QR_SECRET)
   tests/               pytest; conftest.py gives each test an in-memory SQLite database
@@ -101,7 +104,7 @@ frontend/
                        FaceCheckPage (camera and face model check),
                        EnrollFacePage (/users/:userId/face: consent, 3 captures, save),
                        KioskPage (/kiosk: no user login; terminal key + entry/exit setup),
-                       HistoryPage (/history: day range + user filters, summary)
+                       HistoryPage (/history: day range + user filters, summary, reason)
   src/kiosk/           kioskApi.js: checkFace, checkQr (send X-Terminal-Key);
                        qrScanner.js: readQrFromVideo (jsQR on the camera picture)
                        (QrPage: /users/:userId/qr, renews the code when it expires)

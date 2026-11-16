@@ -14,6 +14,7 @@ import secrets
 from typing import Annotated
 from urllib.parse import urlencode
 
+import httpx
 from authlib.integrations.starlette_client import OAuth, OAuthError
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.responses import RedirectResponse
@@ -162,7 +163,12 @@ async def sso_login(request: Request) -> RedirectResponse:
     if not settings.sso_client_id:
         return _back_to_frontend(error="sso_not_configured")
     redirect_uri = str(request.url_for("sso_callback"))
-    return await oauth.sso.authorize_redirect(request, redirect_uri)
+    try:
+        # The first time, Authlib downloads the provider's addresses from the
+        # metadata URL, so this is the step that fails without internet.
+        return await oauth.sso.authorize_redirect(request, redirect_uri)
+    except httpx.HTTPError:
+        return _back_to_frontend(error="sso_unavailable")
 
 
 @router.get("/sso/callback", name="sso_callback")
@@ -173,6 +179,9 @@ async def sso_callback(request: Request, db: DbSession) -> RedirectResponse:
     except OAuthError:
         # The user cancelled, the state did not match, or the provider refused.
         return _back_to_frontend(error="sso_failed")
+    except httpx.HTTPError:
+        # The provider could not be reached (for example, the internet went down).
+        return _back_to_frontend(error="sso_unavailable")
 
     claims = provider_token.get("userinfo") or {}
     # Google and most providers send "email"; Microsoft may only send

@@ -9,7 +9,7 @@ from pathlib import Path
 from typing import Annotated
 
 from fastapi import Depends
-from sqlalchemy import Engine, create_engine, func, select
+from sqlalchemy import Engine, create_engine, func, inspect, select, text
 from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker
 
 from app.config import settings
@@ -53,9 +53,9 @@ def init_db(bind: Engine = engine) -> None:
     from app.security import hash_password
 
     _create_sqlite_folder(bind)
-    # Creates missing tables only. It never changes existing tables, so a model
-    # change needs the SQLite file to be deleted (no migrations tool yet).
+    # Creates missing tables only. It never changes existing tables.
     Base.metadata.create_all(bind)
+    _add_new_columns(bind)
 
     with Session(bind) as db:
         user_count = db.scalar(select(func.count()).select_from(User))
@@ -69,6 +69,25 @@ def init_db(bind: Engine = engine) -> None:
                 )
             )
             db.commit()
+
+
+def _add_new_columns(bind: Engine) -> None:
+    """Add the columns that were added to the models after a table was created.
+
+    A small replacement for a migrations tool, enough for this project: it only
+    adds columns that may be empty, so the rows that already exist get NULL.
+    Renaming or removing a column still needs the SQLite file to be deleted.
+    """
+    inspector = inspect(bind)
+    with bind.begin() as connection:
+        for table in Base.metadata.sorted_tables:
+            existing = {column["name"] for column in inspector.get_columns(table.name)}
+            for column in table.columns:
+                if column.name not in existing and column.nullable:
+                    column_type = column.type.compile(dialect=bind.dialect)
+                    connection.execute(
+                        text(f"ALTER TABLE {table.name} ADD COLUMN {column.name} {column_type}")
+                    )
 
 
 def _create_sqlite_folder(bind: Engine) -> None:

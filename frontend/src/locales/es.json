@@ -56,6 +56,7 @@
     "sso_not_allowed": "Esta cuenta no tiene acceso de administrador. Pide a un administrador que te agregue con este correo.",
     "sso_failed": "No se pudo completar el inicio de sesión. Inténtalo de nuevo.",
     "sso_not_configured": "El inicio de sesión único aún no está configurado en el servidor.",
+    "sso_unavailable": "No se pudo contactar al proveedor de inicio de sesión. Revisa la conexión a internet. El punto de acceso sigue funcionando sin internet.",
     "no_face": "No se encontró ningún rostro. Mira de frente a la cámara.",
     "multiple_faces": "Se ve más de un rostro. Solo debe haber una persona frente a la cámara.",
     "camera_denied": "El navegador no permitió usar la cámara. Actívala en la configuración del sitio y recarga.",
@@ -63,6 +64,7 @@
     "face_model_failed": "No se pudo cargar el modelo facial.",
     "camera_not_ready": "La cámara todavía no muestra imagen. Espera un momento e inténtalo de nuevo.",
     "user_inactive": "Este usuario está desactivado. Reactívalo para enrolar su rostro.",
+    "face_already_enrolled": "Este rostro ya está enrolado en otro usuario. Si es la misma persona, borra primero el rostro del otro usuario.",
     "invalid_terminal_key": "La clave de terminal no es válida. Revisa la configuración del punto de acceso.",
     "qr_expired": "El código QR venció. Pide uno nuevo.",
     "qr_invalid": "El código QR no es válido.",
@@ -168,7 +170,17 @@
       "method": "Método",
       "result": "Resultado",
       "direction": "Puerta",
-      "distance": "Distancia"
+      "distance": "Distancia",
+      "reason": "Motivo"
+    },
+    "reason": {
+      "face_no_match": "Rostro no coincide con nadie",
+      "face_ambiguous": "Rostro dudoso: parecido a dos personas",
+      "no_faces_enrolled": "No hay rostros enrolados",
+      "qr_invalid": "QR no válido",
+      "qr_expired": "QR vencido",
+      "qr_already_used": "QR ya usado",
+      "user_inactive": "Usuario desactivado"
     },
     "method": {
       "face": "Rostro",

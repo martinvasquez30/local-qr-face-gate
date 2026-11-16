@@ -50,15 +50,17 @@ def find_match(
     templates: list[tuple[int, list[float]]],
     threshold: float,
     margin: float,
-) -> tuple[int | None, float | None]:
+) -> tuple[int | None, float | None, str | None]:
     """Decide who this face belongs to. Pure function: easy to test.
 
-    `templates` holds (user_id, descriptor) pairs. Returns (user_id, distance)
-    where user_id is None when nobody matches, and distance is the distance to
-    the closest face (None when nobody is enrolled).
+    `templates` holds (user_id, descriptor) pairs. Returns (user_id, distance,
+    reason):
+    - user_id is None when nobody matches;
+    - distance is the distance to the closest face (None when nobody is enrolled);
+    - reason says why nobody matched (None when somebody did).
     """
     if not templates:
-        return None, None
+        return None, None, "no_faces_enrolled"
 
     # Euclidean distance: the straight-line distance between two points in a
     # 128-dimensional space. Smaller means more similar faces.
@@ -66,11 +68,11 @@ def find_match(
     best_distance, best_user_id = distances[0]
 
     if best_distance >= threshold:
-        return None, best_distance
+        return None, best_distance, "face_no_match"
     # Two enrolled people almost equally close: do not guess.
     if len(distances) > 1 and distances[1][0] - best_distance < margin:
-        return None, best_distance
-    return best_user_id, best_distance
+        return None, best_distance, "face_ambiguous"
+    return best_user_id, best_distance, None
 
 
 def record_access(
@@ -96,6 +98,7 @@ def record_access(
             result=result,
             direction=direction,
             distance=distance,
+            reason=reason,
         )
     )
     db.commit()
@@ -117,18 +120,23 @@ def check_face(body: FaceAccessRequest, db: DbSession) -> AccessDecision:
     ).all()
     templates = [(user_id, descriptor) for user_id, descriptor in rows]
 
-    user_id, distance = find_match(
+    user_id, distance, reason = find_match(
         body.descriptor, templates, settings.face_match_threshold, settings.face_match_margin
     )
     user = db.get(User, user_id) if user_id is not None else None
-    return record_access(
+    decision = record_access(
         db,
         method=METHOD_FACE,
         direction=body.direction,
         user=user,
         granted=user is not None,
         distance=distance,
+        reason=reason,
     )
+    # The reason stays in the history for the admins. The kiosk only says
+    # "not recognized": telling a stranger why would only help them retry.
+    decision.reason = None
+    return decision
 
 
 @router.post("/qr", response_model=AccessDecision)
