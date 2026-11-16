@@ -173,12 +173,14 @@ Development login: `admin@example.com` / `admin123`.
 | 1 | Oct 5–11 | Project scaffold: FastAPI health check, React + Vite, docs, ML plan | — |
 | 2 | Oct 12–18 | Temporary login, Spanish/English language switcher | `docs/progress/week-02.md` |
 | 3 | Oct 19–25 | SQLite database, admin-only users API, users management page with routing | `docs/progress/week-03.md` |
+| 5 | Nov 2–8 | Simpler architecture (local monolith), access_events table and filtered list API | `docs/progress/week-05.md` |
+| 6 | Nov 9–15 | SSO with Google, face model and enrollment, kiosk with face and QR, single-use QR codes, history page; tested offline | `docs/progress/week-06.md` |
 
 ### Next steps
 
-1. Progress notes for week 6 (`docs/progress/week-06.md`) and the progress table above.
-2. Threshold check with a few people, full check with the internet disconnected.
-3. Demo script (5 minutes) and rehearsal.
+1. Threshold check with a few people (distances and reasons are in the history page).
+2. Demo script (5 minutes) and rehearsal.
+3. Progress notes for week 7 (`docs/progress/week-07.md`) at the end of the week.
 4. Extras if there is time: blink check (liveness), CSV export, encrypted descriptors.
 
 ### Open questions

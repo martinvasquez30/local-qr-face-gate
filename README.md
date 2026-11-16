@@ -208,6 +208,7 @@ has been reviewed and studied by the author.
 | 2026-11-14 | Claude Code (Anthropic) | SSO sign-in button and token handling in the frontend; face model loading with face-api, camera component, camera check page and model copy script; face enrollment API (pytest tests) and capture page; removal of the `ml/` folder; face verification at the access point (`POST /access/face` with pytest tests, `/kiosk` page); dynamic single-use QR codes (issue and check endpoints with pytest tests, QR page, QR reading at the kiosk) |
 | 2026-11-15 | Claude Code (Anthropic) | Access history page (`/history`) with date and user filters and a shared table style |
 | 2026-11-15 | Claude Code (Anthropic) | Diagnosis of failed face attempts (same face enrolled for two users); rejecting a face already enrolled for another user; storing and showing why an attempt was denied; adding new columns to an existing SQLite database; SSO error page when the provider cannot be reached (all with pytest tests) |
+| 2026-11-16 | Claude Code (Anthropic) | Progress notes for weeks 5 and 6 (`docs/progress/`) and the progress table in `CLAUDE.md` |
 
 ### Third-party libraries
 
