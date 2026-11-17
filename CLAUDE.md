@@ -101,16 +101,19 @@ frontend/
   src/auth/            AuthContext and useAuth()
   src/components/      LanguageSwitcher, BackendStatus, NavBar, ErrorMessage, Camera
   src/pages/           LoginPage (SSO button + dev password form), HomePage, UsersPage,
-                       FaceCheckPage (camera and face model check),
+                       FaceCheckPage (camera and face model check; live head-turn test),
                        EnrollFacePage (/users/:userId/face: consent, 3 captures, save),
-                       KioskPage (/kiosk: no user login; terminal key + entry/exit setup),
+                       KioskPage (/kiosk: no user login; terminal key + entry/exit setup;
+                       asks for a head turn to a random side before each face check),
                        HistoryPage (/history: day range + user filters, summary, reason)
   src/kiosk/           kioskApi.js: checkFace, checkQr (send X-Terminal-Key);
                        qrScanner.js: readQrFromVideo (jsQR on the camera picture)
                        (QrPage: /users/:userId/qr, renews the code when it expires)
   src/users/           CreateUserForm and usersApi (calls to /users)
   src/history/         historyApi.js: listAccessEvents, local day -> UTC moment helpers
-  src/face/            faceModel.js: loads face-api lazily, getDescriptor(video) -> 128 numbers
+  src/face/            faceModel.js: loads face-api lazily (and warms up the 3 networks),
+                       getDescriptor(video) -> 128 numbers,
+                       getHeadTurn(video); headTurn.js: headTurn, hasTurned (liveness)
   scripts/             copy-models.mjs: copies the face model weights to public/models
                        (git-ignored) before `npm run dev` / `npm run build`
 docs/
@@ -181,7 +184,7 @@ Development login: `admin@example.com` / `admin123`.
 1. Threshold check with a few people (distances and reasons are in the history page).
 2. Demo script (5 minutes) and rehearsal.
 3. Progress notes for week 7 (`docs/progress/week-07.md`) at the end of the week.
-4. Extras if there is time: blink check (liveness), CSV export, encrypted descriptors.
+4. Extras if there is time: CSV export, encrypted descriptors.
 
 ### Open questions
 

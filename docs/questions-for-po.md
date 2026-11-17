@@ -75,5 +75,7 @@ to Microsoft (university accounts) is a configuration change.
 
 - **Question:** Must the system detect spoofing attempts (a printed photo or a phone
   screen in front of the camera), or is it out of scope?
-- **Current plan:** Out of the minimum scope; listed as a stretch goal in the roadmap.
+- **Current plan:** A basic check is done: the kiosk asks for a head turn to a random
+  side, which stops printed photos and photos on a phone (a flat picture cannot turn in
+  3D).
 - **Answer:** _pending_

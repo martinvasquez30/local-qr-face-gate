@@ -124,12 +124,18 @@ def check_face(body: FaceAccessRequest, db: DbSession) -> AccessDecision:
         body.descriptor, templates, settings.face_match_threshold, settings.face_match_margin
     )
     user = db.get(User, user_id) if user_id is not None else None
+    granted = user is not None
+    if not body.liveness_passed:
+        # The head did not turn when asked: it may be a photo. Denied, but the
+        # closest match is still logged, so the history shows whose face it was.
+        granted, reason = False, "liveness_failed"
+
     decision = record_access(
         db,
         method=METHOD_FACE,
         direction=body.direction,
         user=user,
-        granted=user is not None,
+        granted=granted,
         distance=distance,
         reason=reason,
     )

@@ -3,7 +3,8 @@ import { useTranslation } from "react-i18next";
 import { errorCodeOf } from "../api.js";
 import Camera from "../components/Camera.jsx";
 import ErrorMessage from "../components/ErrorMessage.jsx";
-import { getDescriptor, loadFaceModels } from "../face/faceModel.js";
+import { getDescriptor, getHeadTurn, loadFaceModels } from "../face/faceModel.js";
+import { hasTurned, isBackToFront, startingTurn } from "../face/headTurn.js";
 import { checkFace, checkQr } from "../kiosk/kioskApi.js";
 import { readQrFromVideo } from "../kiosk/qrScanner.js";
 
@@ -13,6 +14,11 @@ const SHOW_RESULT_MS = 3000; // How long a result stays on screen.
 const FAILURES_BEFORE_QR = 3; // Denied attempts in a row before suggesting a QR code.
 const QR_SCAN_EVERY_MS = 300; // How often the picture is searched for a QR code.
 const QR_MODE_TIMEOUT_MS = 20000; // Back to face recognition if no code is shown.
+const TURN_TIMEOUT_MS = 5000; // Time the person has to turn their head.
+const FRONT_TIMEOUT_MS = 3000; // Time to look straight at the camera again.
+// Short pause between head measures. Without it the measures run back to back,
+// the browser never gets time to draw, and the instructions never appear.
+const LIVENESS_PAUSE_MS = 30;
 
 // The kiosk settings (terminal key and entry/exit) stay in this browser, so
 // the kiosk is set up only once. Storage access can fail (privacy mode).
@@ -41,6 +47,59 @@ function clearSettings() {
 }
 
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+/**
+ * Measure the head turn over and over, adding each value to `values` (oldest
+ * first), until `isDone(values)` is true or `timeoutMs` runs out.
+ * Returns true if it was done in time.
+ */
+async function followHead(video, values, isDone, timeoutMs, isStopped) {
+  const startedAt = Date.now();
+  while (!isStopped() && Date.now() - startedAt < timeoutMs) {
+    await wait(LIVENESS_PAUSE_MS);
+    const { turn } = await getHeadTurn(video);
+    // No face, or more than one, in this picture: skip it.
+    if (turn === undefined) continue;
+    values.push(turn);
+    if (isDone(values)) return true;
+  }
+  return false;
+}
+
+/**
+ * Liveness check: ask for a head turn to a random side, then to look straight
+ * again. `firstTurn` is the value measured when the face was found.
+ * `showStep` puts each instruction on the screen. Returns true if the person
+ * turned to the side that was asked.
+ */
+async function checkLiveness(video, firstTurn, showStep, isStopped) {
+  // Random side, so a recorded video cannot know which way to turn.
+  const side = Math.random() < 0.5 ? "left" : "right";
+  const values = [firstTurn];
+
+  showStep({ kind: "turn", side });
+  const turned = await followHead(
+    video,
+    values,
+    () => hasTurned(values, side),
+    TURN_TIMEOUT_MS,
+    isStopped,
+  );
+  if (!turned || isStopped()) return false;
+
+  // Back to the front: a turned face matches its enrolled face worse. If the
+  // person does not come back in time, the check goes on anyway.
+  showStep({ kind: "front" });
+  const start = startingTurn(values);
+  await followHead(
+    video,
+    values,
+    () => isBackToFront(values[values.length - 1], start),
+    FRONT_TIMEOUT_MS,
+    isStopped,
+  );
+  return true;
+}
 
 /**
  * The access point (kiosk). It has no user login: it is set up once with the
@@ -126,15 +185,16 @@ function KioskSetup({ errorCode, onSaved }) {
 
 /**
  * The screen at the door. In "face" mode, every CHECK_EVERY_MS it looks for
- * exactly one face, sends its 128 numbers to the server and shows the server's
- * decision. In "qr" mode it reads a QR code with the same camera instead.
+ * exactly one face, asks the person to turn their head (liveness check), sends
+ * the face's 128 numbers to the server and shows the server's decision. In
+ * "qr" mode it reads a QR code with the same camera instead.
  */
 function KioskScreen({ settings, onInvalidKey, onReconfigure }) {
   const { t } = useTranslation();
   const videoRef = useRef(null);
   const [isModelReady, setIsModelReady] = useState(false);
   const [mode, setMode] = useState("face"); // "face" or "qr"
-  // What the screen says: idle, showQr, multiple, granted, denied or error.
+  // What the screen says: idle, turn, front, showQr, multiple, granted, denied or error.
   const [message, setMessage] = useState({ kind: "idle" });
   const [failures, setFailures] = useState(0);
 
@@ -157,7 +217,8 @@ function KioskScreen({ settings, onInvalidKey, onReconfigure }) {
         await wait(CHECK_EVERY_MS);
         if (stopped) return;
         try {
-          const { descriptor, error } = await getDescriptor(videoRef.current);
+          // 1. Is there exactly one face? (The quick measure, without the descriptor.)
+          const { turn, error } = await getHeadTurn(videoRef.current);
           if (stopped) return;
           if (error) {
             if (error === "no_face") waitForNextPerson = false;
@@ -166,10 +227,40 @@ function KioskScreen({ settings, onInvalidKey, onReconfigure }) {
           }
           if (waitForNextPerson) continue;
 
-          const decision = await checkFace(settings.terminalKey, descriptor, settings.direction);
+          // 2. Liveness: a head turn to a random side, which a photo cannot do.
+          const livenessPassed = await checkLiveness(
+            videoRef.current,
+            turn,
+            setMessage,
+            () => stopped,
+          );
+          if (stopped) return;
+
+          // 3. The descriptor is taken after the turn, when the person looks
+          // straight again, so the face that is checked is the one that turned.
+          const capture = await getDescriptor(videoRef.current);
+          if (stopped) return;
+          if (capture.error) {
+            // The person left during the check: nothing to log.
+            setMessage({ kind: "idle" });
+            continue;
+          }
+
+          // 4. The server decides, and logs the attempt (also a failed turn).
+          const decision = await checkFace(
+            settings.terminalKey,
+            capture.descriptor,
+            settings.direction,
+            livenessPassed,
+          );
           if (stopped) return;
           const granted = decision.result === "granted";
-          setMessage({ kind: decision.result, name: decision.user_name });
+          setMessage({
+            kind: decision.result,
+            name: decision.user_name,
+            // The kiosk knows this reason itself; the server never says why a face failed.
+            reason: livenessPassed ? undefined : "liveness_failed",
+          });
           setFailures((count) => (granted ? 0 : count + 1));
           waitForNextPerson = granted;
 
@@ -248,6 +339,8 @@ function KioskScreen({ settings, onInvalidKey, onReconfigure }) {
   else if (message.kind === "denied")
     text = message.reason ? t(`errors.${message.reason}`) : t("kiosk.denied");
   else if (message.kind === "multiple") text = t("kiosk.multiple");
+  else if (message.kind === "turn") text = t(`kiosk.turn.${message.side}`);
+  else if (message.kind === "front") text = t("kiosk.lookFront");
   else if (message.kind === "error")
     text = t(`errors.${message.code}`, { defaultValue: t("errors.unexpected_error") });
   else text = t("kiosk.idle");

@@ -191,7 +191,7 @@ values, and register it in `frontend/src/i18n.js` (`LANGUAGE_NAMES` and `resourc
 - [x] Face model and camera in the browser (`/face-check`)
 - [x] Face enrollment: 3 captures averaged into one template per user (`/users/{id}/face`)
 - [ ] Full flow checked with the internet disconnected
-- [ ] Liveness detection (anti-spoofing), stretch goal
+- [x] Liveness check: the kiosk asks for a head turn to a random side (stops photos)
 
 ## Credits and AI usage
 
@@ -209,6 +209,7 @@ has been reviewed and studied by the author.
 | 2026-11-15 | Claude Code (Anthropic) | Access history page (`/history`) with date and user filters and a shared table style |
 | 2026-11-15 | Claude Code (Anthropic) | Diagnosis of failed face attempts (same face enrolled for two users); rejecting a face already enrolled for another user; storing and showing why an attempt was denied; adding new columns to an existing SQLite database; SSO error page when the provider cannot be reached (all with pytest tests) |
 | 2026-11-16 | Claude Code (Anthropic) | Progress notes for weeks 5 and 6 (`docs/progress/`) and the progress table in `CLAUDE.md` |
+| 2026-11-17 | Claude Code (Anthropic) | Liveness check: a blink check was built and dropped after real tests (the landmark model barely moves the eyelids); replaced by a random head-turn challenge (`headTurn.js`), `liveness_passed` field and `liveness_failed` reason (pytest tests), network warm-up at load, live head-turn test on the camera check page |
 
 ### Third-party libraries
 

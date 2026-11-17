@@ -69,12 +69,18 @@
     "qr_expired": "El código QR venció. Pide uno nuevo.",
     "qr_invalid": "El código QR no es válido.",
     "qr_already_used": "Este código QR ya se usó.",
+    "liveness_failed": "No se detectó el giro de cabeza. Gira la cabeza hacia el lado que se indica.",
     "invalid_date_range": "La fecha \"desde\" es posterior a la fecha \"hasta\"."
   },
   "kiosk": {
     "title": "Punto de acceso",
     "idle": "Mira a la cámara",
     "multiple": "Solo una persona a la vez",
+    "turn": {
+      "left": "Gira la cabeza a tu izquierda",
+      "right": "Gira la cabeza a tu derecha"
+    },
+    "lookFront": "Ahora mira de frente",
     "granted": "Bienvenido/a, {{name}}",
     "denied": "No reconocido",
     "qrFallback": "¿No te reconoce? Usa un código QR (pídelo al administrador).",
@@ -113,7 +119,16 @@
     "loadingModel": "Cargando el modelo facial…",
     "check": "Probar",
     "checking": "Analizando…",
-    "result": "Rostro detectado: descriptor de {{length}} números en {{ms}} ms ({{preview}}, …)."
+    "result": "Rostro detectado: descriptor de {{length}} números en {{ms}} ms ({{preview}}, …).",
+    "turnStart": "Probar giro de cabeza",
+    "turnStop": "Detener prueba de giro",
+    "turnHelp": "Mira de frente y luego gira la cabeza a cada lado. El punto de acceso pide un giro de al menos {{needed}}.",
+    "turnStats": "Giro: {{current}} ({{side}}) · Máximo a la izquierda: {{mostLeft}} · Máximo a la derecha: {{mostRight}} · {{rate}} mediciones/s",
+    "side": {
+      "left": "izquierda",
+      "right": "derecha",
+      "front": "de frente"
+    }
   },
   "users": {
     "title": "Usuarios",
@@ -174,6 +189,7 @@
       "reason": "Motivo"
     },
     "reason": {
+      "liveness_failed": "Sin giro de cabeza (¿una foto?)",
       "face_no_match": "Rostro no coincide con nadie",
       "face_ambiguous": "Rostro dudoso: parecido a dos personas",
       "no_faces_enrolled": "No hay rostros enrolados",

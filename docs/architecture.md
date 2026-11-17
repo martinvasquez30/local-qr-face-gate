@@ -153,8 +153,9 @@ not with SSO, so the kiosk keeps working without internet.
 How the access point checks a face (done in week 6):
 
 1. `/kiosk` is set up once in the browser with the terminal key and entry/exit. Every
-   1.5 s it looks for exactly one face and sends its 128 numbers to
-   `POST /access/face` with the `X-Terminal-Key` header.
+   1.5 s it looks for exactly one face, asks the person to **turn their head** (see
+   "Liveness check" below) and sends the face's 128 numbers to `POST /access/face` with
+   the `X-Terminal-Key` header, together with `liveness_passed`.
 2. The server compares them with the faces of all **active** users and takes the closest.
    It accepts only if that distance is below `FACE_MATCH_THRESHOLD` (0.5) **and** at least
    `FACE_MATCH_MARGIN` (0.05) smaller than the second closest, so two similar people are
@@ -175,8 +176,66 @@ closer than the threshold). In the first tests the same face was enrolled for tw
 and the margin rule turned that person away almost every time: 36 of 38 denied attempts
 were under the threshold. The stored reasons make this kind of problem visible.
 
-Known limitation: there is no liveness check, so a photo of an enrolled person shown on
-a phone can be accepted (measured: 0.42 for a photo vs 0.35 for the real face).
+#### Liveness check (head turn)
+
+Without it, a photo of an enrolled person shown on a phone was accepted (measured: 0.42
+for the photo vs 0.35 for the real face). So before checking who the person is, the kiosk
+asks them to turn their head to a random side (`src/face/headTurn.js`):
+
+1. face-api already finds 68 points on the face to compute the descriptor. The **turn**
+   is how far the tip of the nose is from the middle between the eyes, measured along the
+   line that joins the eyes and divided by the distance between the eyes. It is about 0
+   when looking straight, positive when the person turns to their left and negative to
+   their right.
+2. **Why a photo cannot pass:** the nose sticks out of a real face, so when the head
+   turns, the nose moves sideways compared with the eyes (about 0.17 for a 20° turn). A
+   photo is flat: however it is turned or tilted, the nose stays in the middle between
+   the eyes (0.00). Measuring along the eye line means tilting the head to one side does
+   not count as a turn.
+3. The screen says "Turn your head to your left" or "...right", chosen at random, so a
+   recorded video cannot know which way to turn. The kiosk measures many times per second
+   (detection and points only, without the slower descriptor network), with a 30 ms pause
+   between measures so the browser can still draw the screen. The turn counts when it
+   changes by at least **0.15** from where the head started (the median of the first
+   values), toward the side that was asked, within 5 s. Using the change, not the value,
+   means a photo of someone who is already turned does not pass.
+4. Then "Now look straight ahead": a turned face matches its enrolled face worse, so the
+   descriptor is taken once the head is back near where it started (up to 3 s). It is
+   taken after the turn, so the face that is checked is the face that turned.
+5. The server receives `liveness_passed` as a **required** field. If the head did not
+   turn, the attempt is denied with the reason `liveness_failed` and logged with the
+   closest matching user, so the history shows whose face was shown.
+
+**First attempt: blink detection, dropped.** A blink was tried first, measuring the gap
+between the eyelids from the same 68 points. With a real camera, the face-api landmark
+model barely moves the eyelid points when the eyes close: 0.216 with the eyes open,
+0.186 with them closed, and 0.186 also appeared with the eyes open, just from noise.
+Closed and open eyes could not be told apart, so it was replaced by the head turn, which
+relies on points the model follows well (the nose and the eye centers).
+
+Two problems found while testing, which apply to any check that measures many pictures
+in a row:
+
+- The first run of each network prepares its programs for the graphics card and freezes
+  the page for seconds (measured: 6 s for the first detection, about 50 ms afterwards).
+  Now `loadFaceModels` runs the three networks once on a blank picture (`warmUp`), while
+  the screen says "Loading face model…".
+- With no pause between measures, the instructions were never drawn. Hence the 30 ms
+  pause.
+
+The camera check page (`/face-check`) has a **head-turn test** that shows the turn live,
+which side it means, the most it reached to each side and the measures per second. It is
+how the 0.15 limit is checked with a real camera.
+
+Limits, said plainly:
+
+- Someone holding a **3D mask**, or a video that happens to turn to the right side, can
+  pass. A sequence of two random turns would make guessing harder.
+- The check runs in the kiosk's browser and the server trusts `liveness_passed`. That is
+  acceptable because the kiosk is a trusted device identified by its terminal key; a
+  modified kiosk could lie. A server-side check would need the server to see the video.
+- It is not bank-grade anti-spoofing: that needs a trained anti-spoofing model or a depth
+  camera.
 
 ### 7. SSO for the admin portal
 

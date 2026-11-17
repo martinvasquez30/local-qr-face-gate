@@ -90,6 +90,10 @@ class FaceAccessRequest(BaseModel):
 
     descriptor: Descriptor
     direction: Direction = "in"
+    # Whether the person turned their head when the kiosk asked (liveness
+    # check: a flat photo cannot). Required, so a kiosk can never skip the
+    # check by leaving it out.
+    liveness_passed: bool
 
 
 class QrAccessRequest(BaseModel):

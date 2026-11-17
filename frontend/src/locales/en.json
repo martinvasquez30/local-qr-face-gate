@@ -69,12 +69,18 @@
     "qr_expired": "The QR code has expired. Ask for a new one.",
     "qr_invalid": "The QR code is not valid.",
     "qr_already_used": "This QR code was already used.",
+    "liveness_failed": "No head turn was detected. Turn your head to the side shown.",
     "invalid_date_range": "The \"from\" date is after the \"to\" date."
   },
   "kiosk": {
     "title": "Access point",
     "idle": "Look at the camera",
     "multiple": "One person at a time",
+    "turn": {
+      "left": "Turn your head to your left",
+      "right": "Turn your head to your right"
+    },
+    "lookFront": "Now look straight ahead",
     "granted": "Welcome, {{name}}",
     "denied": "Not recognized",
     "qrFallback": "Not recognized? Use a QR code (ask an administrator for one).",
@@ -113,7 +119,16 @@
     "loadingModel": "Loading face model…",
     "check": "Check",
     "checking": "Analyzing…",
-    "result": "Face found: a descriptor of {{length}} numbers in {{ms}} ms ({{preview}}, …)."
+    "result": "Face found: a descriptor of {{length}} numbers in {{ms}} ms ({{preview}}, …).",
+    "turnStart": "Test head turn",
+    "turnStop": "Stop head-turn test",
+    "turnHelp": "Look straight ahead, then turn your head to each side. The access point asks for a turn of at least {{needed}}.",
+    "turnStats": "Turn: {{current}} ({{side}}) · Most to the left: {{mostLeft}} · Most to the right: {{mostRight}} · {{rate}} measures/s",
+    "side": {
+      "left": "left",
+      "right": "right",
+      "front": "straight"
+    }
   },
   "users": {
     "title": "Users",
@@ -174,6 +189,7 @@
       "reason": "Reason"
     },
     "reason": {
+      "liveness_failed": "No head turn (a photo?)",
       "face_no_match": "Face matches nobody",
       "face_ambiguous": "Unclear face: looks like two people",
       "no_faces_enrolled": "No faces enrolled",

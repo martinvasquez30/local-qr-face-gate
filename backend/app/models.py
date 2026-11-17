@@ -111,9 +111,9 @@ class AccessEvent(Base):
     # Face attempts only: distance to the closest enrolled face. Kept to check
     # the match threshold with real attempts.
     distance: Mapped[float | None] = mapped_column()
-    # Denied attempts only: why, as a translatable code. Face: "face_no_match",
-    # "face_ambiguous" or "no_faces_enrolled". QR: "qr_invalid", "qr_expired",
-    # "qr_already_used" or "user_inactive".
+    # Denied attempts only: why, as a translatable code. Face: "liveness_failed"
+    # (no head turn), "face_no_match", "face_ambiguous" or "no_faces_enrolled".
+    # QR: "qr_invalid", "qr_expired", "qr_already_used" or "user_inactive".
     reason: Mapped[str | None] = mapped_column(String(30))
     # Stored in UTC, like the user dates. Indexed because reports filter by it.
     created_at: Mapped[datetime] = mapped_column(

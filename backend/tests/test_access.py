@@ -18,10 +18,14 @@ def add_face(db, user: User, value: float) -> None:
     db.commit()
 
 
-def check_face(client, value: float, direction: str = "in", headers=TERMINAL):
+def check_face(client, value: float, direction: str = "in", headers=TERMINAL, liveness_passed=True):
     return client.post(
         "/access/face",
-        json={"descriptor": descriptor(value), "direction": direction},
+        json={
+            "descriptor": descriptor(value),
+            "direction": direction,
+            "liveness_passed": liveness_passed,
+        },
         headers=headers,
     )
 
@@ -168,8 +172,50 @@ def test_with_nobody_enrolled_the_attempt_is_denied(client, db):
 
 def test_an_invalid_descriptor_is_rejected_with_a_code(client):
     response = client.post(
-        "/access/face", json={"descriptor": [0.1] * 10, "direction": "in"}, headers=TERMINAL
+        "/access/face",
+        json={"descriptor": [0.1] * 10, "direction": "in", "liveness_passed": True},
+        headers=TERMINAL,
     )
 
     assert response.status_code == 422
     assert response.json()["detail"] == "invalid_input"
+
+
+# --- Liveness (head turn) ---------------------------------------------------
+
+
+def test_without_a_head_turn_an_enrolled_face_is_denied(client, db, member):
+    # For example, a photo of the member shown on a phone.
+    add_face(db, member, 0.1)
+
+    response = check_face(client, 0.1, liveness_passed=False)
+
+    body = response.json()
+    assert body["result"] == "denied"
+    assert body["user_name"] is None
+    assert body["reason"] is None  # The kiosk shows its own message.
+    [event] = logged_events(db)
+    # Logged with the face it looks like, so the history shows whose photo was used.
+    assert (event.user_id, event.result, event.reason) == (member.id, "denied", "liveness_failed")
+    assert event.distance == pytest.approx(0.0)
+
+
+def test_without_a_head_turn_an_unknown_face_is_logged_as_liveness_failed(client, db, member):
+    add_face(db, member, 0.1)
+
+    check_face(client, 0.9, liveness_passed=False)
+
+    [event] = logged_events(db)
+    assert (event.user_id, event.reason) == (None, "liveness_failed")
+
+
+def test_a_kiosk_cannot_leave_out_the_liveness_check(client, db, member):
+    add_face(db, member, 0.1)
+
+    response = client.post(
+        "/access/face", json={"descriptor": descriptor(0.1), "direction": "in"}, headers=TERMINAL
+    )
+
+    assert response.status_code == 422
+    assert response.json()["detail"] == "invalid_input"
+    assert logged_events(db) == []

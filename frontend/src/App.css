@@ -291,6 +291,13 @@ a.button {
   margin-top: 16px;
 }
 
+/* Numbers that change many times per second: same width digits, so they do not jump. */
+.face-check__stats {
+  margin: 8px 0 0;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
 /* --- Kiosk (access point) --- */
 
 .kiosk__message {
@@ -307,6 +314,13 @@ a.button {
 .kiosk__message--granted {
   color: var(--color-online);
   background: var(--color-success-bg);
+}
+
+/* The head-turn steps are instructions: they stand out from "look at the camera". */
+.kiosk__message--turn,
+.kiosk__message--front {
+  color: var(--color-primary);
+  outline: 2px solid var(--color-primary);
 }
 
 .kiosk__message--denied,
