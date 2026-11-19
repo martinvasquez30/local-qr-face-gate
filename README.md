@@ -210,9 +210,24 @@ off, so the rest of the system can be tried from any browser:
 
 ### Steps
 
-1. **Supabase:** create a project. In **Connect**, copy the **Session pooler** connection
-   string (the direct connection needs IPv6, which Render does not have) and put your
-   database password in it.
+1. **Supabase:** create a project in `us-east-1` (next to Render's Virginia region). In
+   the SQL editor, create a database user for the app with its own **private schema**
+   (Supabase's automatic Data API only exposes the `public` schema, so the app's tables
+   are never reachable through it):
+
+   ```sql
+   create role app_user with login password '<a long random password>';
+   grant app_user to postgres;
+   create schema app authorization app_user;
+   revoke app_user from postgres;
+   alter role app_user set search_path = app;
+   revoke all on schema app from public;
+   ```
+
+   The connection string uses the **Session pooler** (the direct connection needs IPv6,
+   which Render does not have), with the user written as `app_user.<project-ref>`:
+   `postgresql://app_user.<project-ref>:<password>@aws-1-us-east-1.pooler.supabase.com:5432/postgres`.
+   The tables are created by the backend on its first start.
 2. **Render:** New → **Blueprint** → choose this repository. Render reads `render.yaml`,
    creates the secrets and asks for the rest:
    - `DATABASE_URL`: the Supabase string from step 1.

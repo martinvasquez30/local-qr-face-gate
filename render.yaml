@@ -7,6 +7,8 @@ services:
     name: access-control-api
     runtime: python
     plan: free
+    # Same area as the Supabase database (us-east-1), so every query is fast.
+    region: virginia
     rootDir: backend
     buildCommand: pip install -r requirements.txt
     # --proxy-headers and --forwarded-allow-ips: Render's proxy receives HTTPS and
