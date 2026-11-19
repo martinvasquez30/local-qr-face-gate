@@ -1,6 +1,10 @@
+import dataclasses
+
 import pytest
 from sqlalchemy import func, select
 
+from app import faces
+from app.config import settings
 from app.models import DESCRIPTOR_LENGTH, FaceTemplate, User
 from tests.conftest import ADMIN_EMAIL, auth_header, token_for
 
@@ -147,4 +151,37 @@ def test_deactivating_a_user_deletes_their_face(client, db, admin_headers, membe
 
     client.patch(f"/users/{member.id}", json={"is_active": False}, headers=admin_headers)
 
+    assert stored_template(db, member.id) is None
+
+
+# --- Face recognition turned off (online demo) ------------------------------
+
+
+@pytest.fixture
+def face_off(monkeypatch):
+    """Run the test as the online demo: FACE_RECOGNITION_ENABLED=false."""
+    monkeypatch.setattr(
+        faces, "settings", dataclasses.replace(settings, face_recognition_enabled=False)
+    )
+
+
+def test_enrolling_is_refused_when_face_recognition_is_off(client, admin_headers, member, db, face_off):
+    response = enroll(client, admin_headers, member.id, [descriptor(0.1)])
+
+    assert response.status_code == 403
+    assert response.json()["detail"] == "face_recognition_disabled"
+    # Nothing was stored.
+    assert stored_template(db, member.id) is None
+
+
+def test_deleting_a_face_still_works_when_face_recognition_is_off(
+    client, admin_headers, member, db, face_off
+):
+    # Removing biometric data must always be possible.
+    db.add(FaceTemplate(user_id=member.id, descriptor=descriptor(0.1)))
+    db.commit()
+
+    response = client.delete(f"/users/{member.id}/face", headers=admin_headers)
+
+    assert response.status_code == 204
     assert stored_template(db, member.id) is None

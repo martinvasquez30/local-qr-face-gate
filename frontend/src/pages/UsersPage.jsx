@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { errorCodeOf } from "../api.js";
 import { useAuth } from "../auth/AuthContext.jsx";
 import ErrorMessage from "../components/ErrorMessage.jsx";
+import { FACE_RECOGNITION_ENABLED } from "../config.js";
 import CreateUserForm from "../users/CreateUserForm.jsx";
 import { listUsers, updateUser } from "../users/usersApi.js";
 
@@ -140,12 +141,15 @@ function UsersPage() {
                     {/* Only active users can be enrolled or get a QR code. */}
                     {user.is_active && (
                       <>
-                        <Link
-                          className="button button--secondary button--small"
-                          to={`/users/${user.id}/face`}
-                        >
-                          {t("users.actions.face")}
-                        </Link>
+                        {/* Not in the online demo: faces are only enrolled locally. */}
+                        {FACE_RECOGNITION_ENABLED && (
+                          <Link
+                            className="button button--secondary button--small"
+                            to={`/users/${user.id}/face`}
+                          >
+                            {t("users.actions.face")}
+                          </Link>
+                        )}
                         <Link
                           className="button button--secondary button--small"
                           to={`/users/${user.id}/qr`}

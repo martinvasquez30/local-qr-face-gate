@@ -5,3 +5,5 @@ email-validator>=2.0
 authlib>=1.3
 httpx>=0.27
 itsdangerous>=2.1
+# PostgreSQL driver, only used when DATABASE_URL points to PostgreSQL (online demo).
+psycopg[binary]>=3.2

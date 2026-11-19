@@ -49,7 +49,12 @@ Full design in `docs/architecture.md`. In short:
 
 - **Local monolith, no cloud**: one FastAPI server with SQLite (through SQLAlchemy) on the
   same machine or local network. One React frontend with three views: admin portal, face
-  enrollment and access point (kiosk). No sync, no PWA, no PostgreSQL.
+  enrollment and access point (kiosk). No sync, no PWA.
+- **Online demo** (rubric asks for a deployment): the same code on Vercel (frontend),
+  Render (backend, `render.yaml`) and Supabase PostgreSQL, with
+  `FACE_RECOGNITION_ENABLED=false` / `VITE_FACE_RECOGNITION_ENABLED=false`: the server
+  refuses face descriptors (403 `face_recognition_disabled`), so no biometric data reaches
+  the cloud. `INITIAL_ADMIN_EMAIL` replaces the demo admin there (SSO only).
 - **Faces**: the browser computes a face descriptor with a pre-trained model served
   locally (candidate `@vladmandic/face-api`); photos never leave the browser. The server
   compares descriptors (Euclidean distance) against a threshold.
@@ -76,14 +81,17 @@ backend/
                        password login (/auth/login); /auth/me, get_current_user, require_admin
   app/security.py      PBKDF2 password hashing and HMAC-signed tokens (stdlib only)
   app/config.py        Settings from environment variables, with dev defaults
-  app/database.py      SQLAlchemy engine, get_db (one session per request), init_db + demo admin,
+                       (incl. face_recognition_enabled, initial_admin_email)
+  app/database.py      SQLAlchemy engine (normalize_database_url: PostgreSQL -> psycopg 3),
+                       get_db (one session per request), init_db + first admin,
                        _add_new_columns (adds new nullable model columns to an existing SQLite file)
   app/models.py        Database tables (User, AccessEvent), allowed values, as_utc()
   app/schemas.py       Pydantic shapes the API receives and returns (users, access events)
   app/users.py         Admin-only /users endpoints (list, create, get, update)
   app/faces.py         Admin-only GET/PUT/DELETE /users/{id}/face (average of captures;
                        the numbers are never returned; 409 face_already_enrolled if the face
-                       already belongs to another user)
+                       already belongs to another user); require_face_recognition (403 when
+                       FACE_RECOGNITION_ENABLED is false, also used by POST /access/face)
   app/access_events.py Admin-only GET /access-events (filters: start, end, user_id)
   app/access.py        Access point: require_terminal (X-Terminal-Key), POST /access/face,
                        find_match (threshold + margin, returns a denial reason), POST /access/qr
@@ -116,6 +124,8 @@ frontend/
                        getHeadTurn(video); headTurn.js: headTurn, hasTurned (liveness)
   scripts/             copy-models.mjs: copies the face model weights to public/models
                        (git-ignored) before `npm run dev` / `npm run build`
+  vercel.json          Online demo: every route goes to index.html
+render.yaml            Online demo: Render Blueprint for the backend
 docs/
   architecture.md      Design and decisions
   questions-for-po.md  Open questions for the Product Owner
@@ -178,13 +188,17 @@ Development login: `admin@example.com` / `admin123`.
 | 3 | Oct 19–25 | SQLite database, admin-only users API, users management page with routing | `docs/progress/week-03.md` |
 | 5 | Nov 2–8 | Simpler architecture (local monolith), access_events table and filtered list API | `docs/progress/week-05.md` |
 | 6 | Nov 9–15 | SSO with Google, face model and enrollment, kiosk with face and QR, single-use QR codes, history page; tested offline | `docs/progress/week-06.md` |
+| 7 | Nov 16–22 | Duplicate faces rejected, denial reasons, head-turn liveness, weekly table in README, online demo code and config (in progress) | `docs/progress/week-07.md` |
 
 ### Next steps
 
-1. Threshold check with a few people (distances and reasons are in the history page).
-2. Demo script (5 minutes) and rehearsal.
-3. Progress notes for week 7 (`docs/progress/week-07.md`) at the end of the week.
-4. Extras if there is time: CSV export, encrypted descriptors.
+1. Deploy the online demo (Supabase, Render, Vercel; steps in the README) and test it.
+2. Threshold check with a few people (distances and reasons are in the history page).
+3. Demo script (5 minutes) and rehearsal.
+4. Keep `docs/progress/week-07.md` and the README weekly table up to date; the rubric checks
+   that **README.md changes every week** (15 of 100 points).
+5. Rubric items still open: Material Design principles in the UI, tablet check (768 px).
+6. Extras if there is time: CSV export, encrypted descriptors.
 
 ### Open questions
 

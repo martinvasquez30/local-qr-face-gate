@@ -3,6 +3,7 @@ import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { useAuth } from "./auth/AuthContext.jsx";
 import LanguageSwitcher from "./components/LanguageSwitcher.jsx";
 import NavBar from "./components/NavBar.jsx";
+import { FACE_RECOGNITION_ENABLED } from "./config.js";
 import EnrollFacePage from "./pages/EnrollFacePage.jsx";
 import FaceCheckPage from "./pages/FaceCheckPage.jsx";
 import HistoryPage from "./pages/HistoryPage.jsx";
@@ -17,6 +18,8 @@ function App() {
   const { user, isRestoring } = useAuth();
   const { pathname } = useLocation();
   const isAdmin = user?.role === "admin";
+  // The face pages only exist where face recognition is on (not in the online demo).
+  const canUseFaces = isAdmin && FACE_RECOGNITION_ENABLED;
 
   // Pick the screen from the session state. While logged out, every URL shows
   // the login form; after logging in, the same URL shows its page. The kiosk
@@ -39,7 +42,7 @@ function App() {
         <Route path="/users" element={isAdmin ? <UsersPage /> : <Navigate to="/" replace />} />
         <Route
           path="/users/:userId/face"
-          element={isAdmin ? <EnrollFacePage /> : <Navigate to="/" replace />}
+          element={canUseFaces ? <EnrollFacePage /> : <Navigate to="/" replace />}
         />
         <Route path="/history" element={isAdmin ? <HistoryPage /> : <Navigate to="/" replace />} />
         <Route
@@ -48,7 +51,7 @@ function App() {
         />
         <Route
           path="/face-check"
-          element={isAdmin ? <FaceCheckPage /> : <Navigate to="/" replace />}
+          element={canUseFaces ? <FaceCheckPage /> : <Navigate to="/" replace />}
         />
         {/* Unknown URLs go back to the home page. */}
         <Route path="*" element={<Navigate to="/" replace />} />

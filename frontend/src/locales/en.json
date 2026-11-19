@@ -28,7 +28,8 @@
     "welcome": "Hello, {{name}}",
     "signedInAs": "Signed in as {{email}} · {{role}}",
     "description": "Face recognition and dynamic QR access control system.",
-    "logout": "Sign out"
+    "logout": "Sign out",
+    "onlineDemo": "Online demo: face recognition only works in the local installation, because biometric data is never sent to the cloud. Users, QR codes, history, SSO and languages work here."
   },
   "roles": {
     "admin": "Administrator",
@@ -70,7 +71,8 @@
     "qr_invalid": "The QR code is not valid.",
     "qr_already_used": "This QR code was already used.",
     "liveness_failed": "No head turn was detected. Turn your head to the side shown.",
-    "invalid_date_range": "The \"from\" date is after the \"to\" date."
+    "invalid_date_range": "The \"from\" date is after the \"to\" date.",
+    "face_recognition_disabled": "Face recognition is turned off on this server. Use a QR code."
   },
   "kiosk": {
     "title": "Access point",
@@ -98,7 +100,8 @@
     },
     "useQr": "Use a QR code",
     "backToFace": "Back to face recognition",
-    "showQr": "Show your QR code to the camera"
+    "showQr": "Show your QR code to the camera",
+    "qrOnly": "In the online demo this access point only reads QR codes. Face recognition works in the local installation."
   },
   "enroll": {
     "back": "← Back to users",

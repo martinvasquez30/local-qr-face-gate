@@ -17,7 +17,7 @@ class Settings:
     token_ttl_seconds: int
     # Browser origins allowed to call the API (CORS).
     cors_origins: tuple[str, ...]
-    # SQLAlchemy database URL. SQLite in development; PostgreSQL later.
+    # SQLAlchemy database URL. SQLite locally; PostgreSQL (Supabase) in the online demo.
     database_url: str
     # SSO (OpenID Connect). The metadata URL says which provider is used:
     # Google, Microsoft or any other works with the same code.
@@ -43,9 +43,21 @@ class Settings:
     qr_secret: str
     # How long a QR code is valid, in seconds.
     qr_ttl_seconds: int
+    # False in the online demo: face descriptors are biometric data and must not
+    # reach a cloud server. Users, QR codes, history and SSO still work.
+    face_recognition_enabled: bool
+    # Email of the first admin, created (without a password, so SSO only) when
+    # the database is empty. Empty = the development admin with a known password,
+    # which must never exist on a public server.
+    initial_admin_email: str
 
 
 GOOGLE_METADATA_URL = "https://accounts.google.com/.well-known/openid-configuration"
+
+
+def _is_on(value: str) -> bool:
+    """Read an on/off variable: anything except "false", "0", "no" or "off" is on."""
+    return value.strip().lower() not in ("false", "0", "no", "off")
 
 
 def load_settings() -> Settings:
@@ -76,6 +88,8 @@ def load_settings() -> Settings:
         # Random on every start if not set: QR codes only live a minute anyway.
         qr_secret=os.environ.get("QR_SECRET") or secrets.token_urlsafe(32),
         qr_ttl_seconds=int(os.environ.get("QR_TTL_SECONDS", "60")),
+        face_recognition_enabled=_is_on(os.environ.get("FACE_RECOGNITION_ENABLED", "true")),
+        initial_admin_email=os.environ.get("INITIAL_ADMIN_EMAIL", "").strip(),
     )
 
 

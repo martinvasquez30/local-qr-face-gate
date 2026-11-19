@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { errorCodeOf } from "../api.js";
 import Camera from "../components/Camera.jsx";
 import ErrorMessage from "../components/ErrorMessage.jsx";
+import { FACE_RECOGNITION_ENABLED } from "../config.js";
 import { getDescriptor, getHeadTurn, loadFaceModels } from "../face/faceModel.js";
 import { hasTurned, isBackToFront, startingTurn } from "../face/headTurn.js";
 import { checkFace, checkQr } from "../kiosk/kioskApi.js";
@@ -188,17 +189,22 @@ function KioskSetup({ errorCode, onSaved }) {
  * exactly one face, asks the person to turn their head (liveness check), sends
  * the face's 128 numbers to the server and shows the server's decision. In
  * "qr" mode it reads a QR code with the same camera instead.
+ *
+ * Without face recognition (online demo) it stays in "qr" mode all the time
+ * and never loads the face model.
  */
 function KioskScreen({ settings, onInvalidKey, onReconfigure }) {
   const { t } = useTranslation();
   const videoRef = useRef(null);
   const [isModelReady, setIsModelReady] = useState(false);
-  const [mode, setMode] = useState("face"); // "face" or "qr"
+  // "face" or "qr".
+  const [mode, setMode] = useState(FACE_RECOGNITION_ENABLED ? "face" : "qr");
   // What the screen says: idle, turn, front, showQr, multiple, granted, denied or error.
   const [message, setMessage] = useState({ kind: "idle" });
   const [failures, setFailures] = useState(0);
 
   useEffect(() => {
+    if (!FACE_RECOGNITION_ENABLED) return;
     loadFaceModels()
       .then(() => setIsModelReady(true))
       .catch(() => setMessage({ kind: "error", code: "face_model_failed" }));
@@ -284,7 +290,8 @@ function KioskScreen({ settings, onInvalidKey, onReconfigure }) {
     };
   }, [isModelReady, mode, settings, onInvalidKey]);
 
-  // QR mode loop: look for a code, check it once, show the result, go back.
+  // QR mode loop: look for a code, check it once, show the result, go back to
+  // face mode. Without face recognition it keeps scanning instead.
   useEffect(() => {
     if (mode !== "qr") return undefined;
     let stopped = false;
@@ -296,7 +303,7 @@ function KioskScreen({ settings, onInvalidKey, onReconfigure }) {
       while (!stopped) {
         await wait(QR_SCAN_EVERY_MS);
         if (stopped) return;
-        if (Date.now() - startedAt > QR_MODE_TIMEOUT_MS) {
+        if (FACE_RECOGNITION_ENABLED && Date.now() - startedAt > QR_MODE_TIMEOUT_MS) {
           setMessage({ kind: "idle" });
           setMode("face");
           return;
@@ -320,6 +327,11 @@ function KioskScreen({ settings, onInvalidKey, onReconfigure }) {
         }
         await wait(SHOW_RESULT_MS);
         if (stopped) return;
+        if (!FACE_RECOGNITION_ENABLED) {
+          // QR only: ready for the next person.
+          setMessage({ kind: "showQr" });
+          continue;
+        }
         setMessage({ kind: "idle" });
         setMode("face");
         return;
@@ -334,7 +346,9 @@ function KioskScreen({ settings, onInvalidKey, onReconfigure }) {
 
   let text;
   if (message.kind === "showQr") text = t("kiosk.showQr");
-  else if (!isModelReady && message.kind !== "error") text = t("faceCheck.loadingModel");
+  // The model only matters in face mode (a QR result must not say "loading").
+  else if (mode === "face" && !isModelReady && message.kind !== "error")
+    text = t("faceCheck.loadingModel");
   else if (message.kind === "granted") text = t("kiosk.granted", { name: message.name });
   else if (message.kind === "denied")
     text = message.reason ? t(`errors.${message.reason}`) : t("kiosk.denied");
@@ -360,13 +374,16 @@ function KioskScreen({ settings, onInvalidKey, onReconfigure }) {
       {mode === "face" && failures >= FAILURES_BEFORE_QR && (
         <p className="notice">{t("kiosk.qrFallback")}</p>
       )}
+      {!FACE_RECOGNITION_ENABLED && <p className="notice">{t("kiosk.qrOnly")}</p>}
 
       <div className="kiosk__actions">
-        {mode === "face" ? (
+        {/* Switching modes only makes sense when face recognition is on. */}
+        {FACE_RECOGNITION_ENABLED && mode === "face" && (
           <button className="button button--primary" type="button" onClick={() => setMode("qr")}>
             {t("kiosk.useQr")}
           </button>
-        ) : (
+        )}
+        {FACE_RECOGNITION_ENABLED && mode === "qr" && (
           <button
             className="button button--secondary"
             type="button"

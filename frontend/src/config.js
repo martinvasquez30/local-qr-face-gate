@@ -4,3 +4,9 @@ export const API_BASE_URL =
 // Name shown on the SSO button ("Sign in with Google"). It must match the
 // provider set in the backend (SSO_METADATA_URL). A brand name: not translated.
 export const SSO_PROVIDER_NAME = import.meta.env.VITE_SSO_PROVIDER_NAME ?? "Google";
+
+// "false" in the online demo: the face pages and buttons are hidden and the
+// kiosk only reads QR codes. The backend has its own switch
+// (FACE_RECOGNITION_ENABLED) and refuses face data anyway; this one only keeps
+// the UI from offering something the server will refuse.
+export const FACE_RECOGNITION_ENABLED = import.meta.env.VITE_FACE_RECOGNITION_ENABLED !== "false";

@@ -17,6 +17,7 @@ from sqlalchemy.orm import Session
 
 from app.config import settings
 from app.database import DbSession
+from app.faces import require_face_recognition
 from app.models import (
     METHOD_FACE,
     METHOD_QR,
@@ -110,7 +111,11 @@ def record_access(
     )
 
 
-@router.post("/face", response_model=AccessDecision)
+@router.post(
+    "/face",
+    response_model=AccessDecision,
+    dependencies=[Depends(require_face_recognition)],
+)
 def check_face(body: FaceAccessRequest, db: DbSession) -> AccessDecision:
     """Compare the face with every enrolled face of an active user."""
     rows = db.execute(

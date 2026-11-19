@@ -28,7 +28,8 @@
     "welcome": "Hola, {{name}}",
     "signedInAs": "Sesión iniciada como {{email}} · {{role}}",
     "description": "Sistema de control de acceso con reconocimiento facial y códigos QR dinámicos.",
-    "logout": "Cerrar sesión"
+    "logout": "Cerrar sesión",
+    "onlineDemo": "Demo en línea: el reconocimiento facial solo funciona en la instalación local, porque los datos biométricos no se envían a la nube. Usuarios, códigos QR, historial, SSO e idiomas sí funcionan aquí."
   },
   "roles": {
     "admin": "Administrador",
@@ -70,7 +71,8 @@
     "qr_invalid": "El código QR no es válido.",
     "qr_already_used": "Este código QR ya se usó.",
     "liveness_failed": "No se detectó el giro de cabeza. Gira la cabeza hacia el lado que se indica.",
-    "invalid_date_range": "La fecha \"desde\" es posterior a la fecha \"hasta\"."
+    "invalid_date_range": "La fecha \"desde\" es posterior a la fecha \"hasta\".",
+    "face_recognition_disabled": "El reconocimiento facial está desactivado en este servidor. Usa un código QR."
   },
   "kiosk": {
     "title": "Punto de acceso",
@@ -98,7 +100,8 @@
     },
     "useQr": "Usar código QR",
     "backToFace": "Volver al reconocimiento facial",
-    "showQr": "Muestra tu código QR a la cámara"
+    "showQr": "Muestra tu código QR a la cámara",
+    "qrOnly": "En la demo en línea este punto de acceso solo lee códigos QR. El reconocimiento facial funciona en la instalación local."
   },
   "enroll": {
     "back": "← Volver a usuarios",

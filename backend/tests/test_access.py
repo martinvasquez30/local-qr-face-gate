@@ -1,6 +1,9 @@
+import dataclasses
+
 import pytest
 from sqlalchemy import select
 
+from app import faces
 from app.access import find_match
 from app.config import settings
 from app.models import DESCRIPTOR_LENGTH, AccessEvent, FaceTemplate, User
@@ -219,3 +222,35 @@ def test_a_kiosk_cannot_leave_out_the_liveness_check(client, db, member):
     assert response.status_code == 422
     assert response.json()["detail"] == "invalid_input"
     assert logged_events(db) == []
+
+
+# --- Face recognition turned off (online demo) ------------------------------
+
+
+def test_face_check_is_refused_and_not_logged_when_face_recognition_is_off(
+    client, db, member, monkeypatch
+):
+    monkeypatch.setattr(
+        faces, "settings", dataclasses.replace(settings, face_recognition_enabled=False)
+    )
+    add_face(db, member, 0.1)
+
+    response = check_face(client, 0.1)
+
+    assert response.status_code == 403
+    assert response.json()["detail"] == "face_recognition_disabled"
+    # The descriptor was not used, so there is no attempt to log.
+    assert logged_events(db) == []
+
+
+def test_a_wrong_terminal_key_is_checked_before_face_recognition_is_off(
+    client, monkeypatch
+):
+    monkeypatch.setattr(
+        faces, "settings", dataclasses.replace(settings, face_recognition_enabled=False)
+    )
+
+    response = check_face(client, 0.1, headers={"X-Terminal-Key": "wrong"})
+
+    assert response.status_code == 401
+    assert response.json()["detail"] == "invalid_terminal_key"

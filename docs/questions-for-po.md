@@ -79,3 +79,17 @@ to Microsoft (university accounts) is a configuration change.
   side, which stops printed photos and photos on a phone (a flat picture cannot turn in
   3D).
 - **Answer:** _pending_
+
+## 10. Online deployment and local biometric data
+
+The course rubric asks for an online deployment (for example Vercel and Supabase), while
+topic 3 asks for local biometric enrollment without internet.
+
+- **Question:** Is an online demo with face recognition turned off enough to meet the
+  deployment criterion, with face recognition shown on the local installation?
+- **Current plan (decided on 2026-11-18):** The same code runs online (Vercel, Render and
+  Supabase) with `FACE_RECOGNITION_ENABLED=false`: users, SSO, QR codes, history and
+  languages work there, and the server refuses face descriptors, so no biometric data
+  reaches the cloud. Face recognition is shown on the local installation. See
+  [`architecture.md`](architecture.md), decision 9.
+- **Answer:** _pending_

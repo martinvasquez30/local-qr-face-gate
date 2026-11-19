@@ -18,6 +18,18 @@ from app.models import FaceTemplate
 from app.schemas import FaceEnroll, FaceStatus
 from app.users import get_user_or_404
 
+def require_face_recognition() -> None:
+    """Dependency: 403 when face recognition is turned off (the online demo).
+
+    Used by the endpoints that receive face descriptors, so no biometric data
+    reaches a server where FACE_RECOGNITION_ENABLED is false.
+    """
+    if not settings.face_recognition_enabled:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="face_recognition_disabled"
+        )
+
+
 router = APIRouter(prefix="/users", tags=["faces"], dependencies=[Depends(require_admin)])
 
 
@@ -51,7 +63,11 @@ def get_face_status(user_id: int, db: DbSession) -> FaceStatus:
     return FaceStatus(enrolled=True, updated_at=template.created_at)
 
 
-@router.put("/{user_id}/face", response_model=FaceStatus)
+@router.put(
+    "/{user_id}/face",
+    response_model=FaceStatus,
+    dependencies=[Depends(require_face_recognition)],
+)
 def enroll_face(user_id: int, body: FaceEnroll, db: DbSession) -> FaceStatus:
     """Save the user's face (the average of the captures). Replaces any earlier one."""
     user = get_user_or_404(db, user_id)

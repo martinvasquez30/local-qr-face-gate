@@ -1,0 +1,43 @@
+# Render Blueprint for the backend of the online demo (see "Online demo" in the README).
+# Render reads this file when the repository is connected as a Blueprint.
+# Values marked `sync: false` are typed in the Render dashboard; they are secrets
+# or depend on the other services, so they are never written here.
+services:
+  - type: web
+    name: access-control-api
+    runtime: python
+    plan: free
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    # --proxy-headers and --forwarded-allow-ips: Render's proxy receives HTTPS and
+    # forwards plain HTTP. With these, the app knows the original address was
+    # https://..., so the SSO callback URL it builds matches the one registered
+    # with Google.
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT --proxy-headers --forwarded-allow-ips "*"
+    healthCheckPath: /health
+    envVars:
+      # Biometric data must not reach a cloud server.
+      - key: FACE_RECOGNITION_ENABLED
+        value: "false"
+      # Random values created by Render once, kept across restarts.
+      - key: TOKEN_SECRET
+        generateValue: true
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: QR_SECRET
+        generateValue: true
+      - key: TERMINAL_KEY
+        generateValue: true
+      # Typed in the dashboard.
+      - key: DATABASE_URL
+        sync: false
+      - key: INITIAL_ADMIN_EMAIL
+        sync: false
+      - key: FRONTEND_URL
+        sync: false
+      - key: CORS_ORIGINS
+        sync: false
+      - key: SSO_CLIENT_ID
+        sync: false
+      - key: SSO_CLIENT_SECRET
+        sync: false

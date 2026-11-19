@@ -1,6 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../auth/AuthContext.jsx";
 import BackendStatus from "../components/BackendStatus.jsx";
+import { FACE_RECOGNITION_ENABLED } from "../config.js";
 
 function HomePage() {
   const { t } = useTranslation();
@@ -18,6 +19,8 @@ function HomePage() {
       </p>
 
       <BackendStatus />
+
+      {!FACE_RECOGNITION_ENABLED && <p className="notice">{t("home.onlineDemo")}</p>}
 
       <div className="home__actions">
         <button className="button button--secondary" type="button" onClick={logout}>

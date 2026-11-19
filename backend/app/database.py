@@ -1,7 +1,8 @@
 """Database connection, sessions and first-time setup (SQLAlchemy 2.0).
 
-SQLite is used in development because it needs no setup. The rest of the code
-only talks to SQLAlchemy, so moving to PostgreSQL means changing DATABASE_URL.
+SQLite is used locally because it needs no setup. The rest of the code only
+talks to SQLAlchemy, so the online demo uses PostgreSQL (Supabase) just by
+changing DATABASE_URL.
 """
 
 from collections.abc import Iterator
@@ -19,13 +20,32 @@ class Base(DeclarativeBase):
     """Parent class of every table model (see models.py)."""
 
 
+def normalize_database_url(database_url: str) -> str:
+    """Make a PostgreSQL URL use the psycopg (version 3) driver.
+
+    Providers such as Supabase give URLs that start with "postgresql://" (or the
+    older "postgres://"). For those, SQLAlchemy would look for the old psycopg2
+    driver; "postgresql+psycopg://" tells it to use psycopg 3, which is the one
+    in requirements.txt.
+    """
+    for prefix in ("postgres://", "postgresql://"):
+        if database_url.startswith(prefix):
+            return "postgresql+psycopg://" + database_url[len(prefix):]
+    return database_url
+
+
 def make_engine(database_url: str, **kwargs) -> Engine:
-    """Create an engine with the options SQLite needs."""
+    """Create an engine with the options each database needs."""
+    database_url = normalize_database_url(database_url)
     connect_args = {}
     if database_url.startswith("sqlite"):
         # FastAPI can use a session in a different thread from the one that
         # opened it. SQLite refuses that by default; this turns the check off.
         connect_args["check_same_thread"] = False
+    else:
+        # A database server may close connections that were idle for a while.
+        # pre_ping checks each one before using it and opens a new one if needed.
+        kwargs.setdefault("pool_pre_ping", True)
     return create_engine(database_url, connect_args=connect_args, **kwargs)
 
 
@@ -60,14 +80,19 @@ def init_db(bind: Engine = engine) -> None:
     with Session(bind) as db:
         user_count = db.scalar(select(func.count()).select_from(User))
         if user_count == 0:
-            db.add(
-                User(
+            if settings.initial_admin_email:
+                # Public server: the first admin has no password, so the only way
+                # in is SSO with this email. There is no known password to guess.
+                admin = User(email=settings.initial_admin_email, name="Admin", role=ROLE_ADMIN)
+            else:
+                # Local development: a demo admin with a known password.
+                admin = User(
                     email="admin@example.com",
                     name="Admin",
                     role=ROLE_ADMIN,
                     password_hash=hash_password("admin123"),
                 )
-            )
+            db.add(admin)
             db.commit()
 
 

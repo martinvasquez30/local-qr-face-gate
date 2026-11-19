@@ -44,6 +44,7 @@ the **access point** (kiosk). Internet is only needed to sign in with SSO.
 | Face verification at the access point (`/kiosk`, `POST /access/face`) | Done (week 6) |
 | SSO: backend endpoints (OpenID Connect, Google first) | Done (week 6) |
 | SSO: login button in the frontend, tested with a real Google OAuth client | Done (week 6) |
+| Online demo without face recognition (Vercel, Render, Supabase) | Code and config ready (week 7), not deployed yet |
 
 ## Design decisions
 
@@ -300,9 +301,37 @@ translation APIs. The initial language is the saved choice, then the browser lan
 then Spanish. Adding a language means adding one JSON file with the same keys and
 registering it in `src/i18n.js`.
 
+### 9. Online demo without face recognition
+
+The course rubric asks for an online deployment, but face descriptors are biometric data
+and this project never sends them to a cloud server. The online demo therefore runs the
+**same code** with one switch turned off:
+
+- **Backend:** `FACE_RECOGNITION_ENABLED=false` makes `PUT /users/{id}/face` and
+  `POST /access/face` answer `403 face_recognition_disabled` (dependency
+  `require_face_recognition` in `faces.py`). The check runs before the body is used, so
+  the descriptor is neither stored nor logged. Deleting a face still works. `/health`
+  reports the switch.
+- **Frontend:** `VITE_FACE_RECOGNITION_ENABLED=false` hides the face pages and buttons,
+  and the kiosk only reads QR codes (it never loads the face model). The backend switch
+  is the real protection; the frontend one only avoids offering something the server
+  refuses.
+- **Database:** PostgreSQL on Supabase instead of SQLite. Only `DATABASE_URL` changes;
+  `normalize_database_url` makes SQLAlchemy use the psycopg 3 driver.
+- **First admin:** on a public server a demo admin with a known password would let anyone
+  in. With `INITIAL_ADMIN_EMAIL`, an empty database gets one admin with that email and no
+  password, so the only way in is SSO.
+
+Hosting: Vercel for the frontend (`frontend/vercel.json`), Render for the backend
+(`render.yaml`), Supabase for the database. Steps in the README ("Online demo").
+
+**Trade-off:** the online demo cannot show face recognition, which is the core of the
+product; it is shown on the local installation. Pending confirmation from the Product
+Owner (question 10 in [`questions-for-po.md`](questions-for-po.md)).
+
 ## Data model
 
-SQLite in development, through SQLAlchemy.
+SQLite in development, through SQLAlchemy (PostgreSQL on Supabase in the online demo).
 
 | Table | Main fields | Status |
 |---|---|---|

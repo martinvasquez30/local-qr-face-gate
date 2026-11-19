@@ -72,9 +72,10 @@ async def validation_error_handler(_request: Request, exc: RequestValidationErro
 
 @app.get("/health", tags=["system"])
 def health_check() -> dict:
-    """Report that the service is running."""
+    """Report that the service is running, and whether face recognition is on."""
     return {
         "status": "ok",
         "version": APP_VERSION,
+        "face_recognition": settings.face_recognition_enabled,
         "timestamp": datetime.now(timezone.utc).isoformat(),
     }
