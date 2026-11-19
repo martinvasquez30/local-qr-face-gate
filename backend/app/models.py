@@ -8,7 +8,7 @@ from sqlalchemy.orm import Mapped, mapped_column, validates
 from app.database import Base
 
 ROLE_ADMIN = "admin"  # Uses the admin portal.
-ROLE_MEMBER = "member"  # Passes through access points; does not log in.
+ROLE_MEMBER = "member"  # Passes through access points; logs in (SSO) only for "My QR".
 
 # Allowed values of the access event columns.
 METHOD_FACE = "face"
@@ -54,6 +54,10 @@ class User(Base):
     is_active: Mapped[bool] = mapped_column(default=True)
     # Only admins have a password. `str | None` makes the column nullable.
     password_hash: Mapped[str | None] = mapped_column(String(255))
+    # Secret key of the user's personal QR codes (see qr.py). The user's own
+    # device signs codes with it, so they can be made without internet. Empty
+    # until the user opens "My QR"; getting a new key replaces the old one.
+    qr_key: Mapped[str | None] = mapped_column(String(64))
     # Stored in UTC. SQLite does not keep the time zone, so values read back
     # from SQLite have no tzinfo, but they are still UTC.
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_utc_now)
@@ -85,7 +89,8 @@ class FaceTemplate(Base):
 
 
 class UsedQrNonce(Base):
-    """The random part of every QR code that was already accepted.
+    """The random part of every QR code that was already accepted (both kinds:
+    issued by an admin, or made by the user's device).
 
     The column is the primary key, so the database itself refuses a second
     copy: that is what makes each QR code single use.

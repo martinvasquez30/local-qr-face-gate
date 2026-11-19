@@ -28,7 +28,7 @@ from app.models import (
     UsedQrNonce,
     User,
 )
-from app.qr import read_qr_token
+from app.qr import is_personal_qr, read_personal_qr, read_qr_token
 from app.schemas import AccessDecision, FaceAccessRequest, QrAccessRequest
 from app.security import InvalidTokenError
 
@@ -160,7 +160,13 @@ def check_qr(body: QrAccessRequest, db: DbSession) -> AccessDecision:
         )
 
     try:
-        user_id, nonce = read_qr_token(body.token)
+        # Two kinds of code (see qr.py): made by the user's device, or issued
+        # by an admin. Both give the same (user_id, nonce), so the rest of the
+        # checks are shared.
+        if is_personal_qr(body.token):
+            user_id, nonce = read_personal_qr(body.token, db)
+        else:
+            user_id, nonce = read_qr_token(body.token)
     except InvalidTokenError as error:
         # Expired is told apart so the kiosk can say "ask for a new code".
         return deny("qr_expired" if str(error) == "expired" else "qr_invalid")

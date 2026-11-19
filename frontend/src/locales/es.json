@@ -11,11 +11,12 @@
     "home": "Inicio",
     "users": "Usuarios",
     "kiosk": "Punto de acceso",
-    "history": "Historial"
+    "history": "Historial",
+    "myQr": "Mi QR"
   },
   "login": {
     "title": "Iniciar sesión",
-    "subtitle": "Ingresa con tu cuenta de administrador.",
+    "subtitle": "Ingresa con tu cuenta de la organización.",
     "email": "Correo electrónico",
     "password": "Contraseña",
     "submit": "Ingresar",
@@ -54,7 +55,7 @@
     "forbidden": "No tienes permiso para hacer esto.",
     "inactive_user": "Tu cuenta está desactivada.",
     "invalid_input": "Revisa los datos ingresados: algún campo no es válido.",
-    "sso_not_allowed": "Esta cuenta no tiene acceso de administrador. Pide a un administrador que te agregue con este correo.",
+    "sso_not_allowed": "Esta cuenta no está registrada. Pide a un administrador que te agregue con este correo.",
     "sso_failed": "No se pudo completar el inicio de sesión. Inténtalo de nuevo.",
     "sso_not_configured": "El inicio de sesión único aún no está configurado en el servidor.",
     "sso_unavailable": "No se pudo contactar al proveedor de inicio de sesión. Revisa la conexión a internet. El punto de acceso sigue funcionando sin internet.",
@@ -72,7 +73,8 @@
     "qr_already_used": "Este código QR ya se usó.",
     "liveness_failed": "No se detectó el giro de cabeza. Gira la cabeza hacia el lado que se indica.",
     "invalid_date_range": "La fecha \"desde\" es posterior a la fecha \"hasta\".",
-    "face_recognition_disabled": "El reconocimiento facial está desactivado en este servidor. Usa un código QR."
+    "face_recognition_disabled": "El reconocimiento facial está desactivado en este servidor. Usa un código QR.",
+    "secure_context_required": "Este navegador no puede generar códigos QR en esta página: debe abrirse con https (o en localhost)."
   },
   "kiosk": {
     "title": "Punto de acceso",
@@ -85,7 +87,7 @@
     "lookFront": "Ahora mira de frente",
     "granted": "Bienvenido/a, {{name}}",
     "denied": "No reconocido",
-    "qrFallback": "¿No te reconoce? Usa un código QR (pídelo al administrador).",
+    "qrFallback": "¿No te reconoce? Muestra tu código QR (\"Mi QR\" en la app) o pídele uno al administrador.",
     "reconfigure": "Cambiar configuración",
     "direction": {
       "in": "Entrada",
@@ -171,6 +173,15 @@
     "expiresIn": "Vence en {{seconds}} s · se renueva solo",
     "help": "Muéstralo a la cámara del punto de acceso; sirve una foto en el celular. Funciona una sola vez.",
     "renew": "Generar otro"
+  },
+  "myQr": {
+    "title": "Mi código QR",
+    "online": "Con conexión",
+    "offline": "Sin conexión a internet: tu código sigue funcionando",
+    "changesIn": "Cambia en {{seconds}} s",
+    "help": "Muéstralo a la cámara del punto de acceso. Cada código sirve una sola vez. Se genera en este dispositivo, así que también funciona sin internet mientras esta página siga abierta.",
+    "newCode": "Código nuevo",
+    "needsConnection": "La primera vez, esta página necesita conexión con el servidor para obtener tu clave. Después funciona sin internet."
   },
   "history": {
     "title": "Historial de accesos",

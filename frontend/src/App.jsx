@@ -10,6 +10,7 @@ import HistoryPage from "./pages/HistoryPage.jsx";
 import HomePage from "./pages/HomePage.jsx";
 import KioskPage from "./pages/KioskPage.jsx";
 import LoginPage from "./pages/LoginPage.jsx";
+import MyQrPage from "./pages/MyQrPage.jsx";
 import QrPage from "./pages/QrPage.jsx";
 import UsersPage from "./pages/UsersPage.jsx";
 
@@ -39,6 +40,8 @@ function App() {
     content = (
       <Routes>
         <Route path="/" element={<HomePage />} />
+        {/* Every logged-in user, members too: their own QR code. */}
+        <Route path="/my-qr" element={<MyQrPage />} />
         <Route path="/users" element={isAdmin ? <UsersPage /> : <Navigate to="/" replace />} />
         <Route
           path="/users/:userId/face"

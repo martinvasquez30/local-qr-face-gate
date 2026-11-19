@@ -293,6 +293,7 @@ has been reviewed and studied by the author.
 | 2026-11-16 | Claude Code (Anthropic) | Progress notes for weeks 5 and 6 (`docs/progress/`) and the progress table in `CLAUDE.md` |
 | 2026-11-17 | Claude Code (Anthropic) | Liveness check: a blink check was built and dropped after real tests (the landmark model barely moves the eyelids); replaced by a random head-turn challenge (`headTurn.js`), `liveness_passed` field and `liveness_failed` reason (pytest tests), network warm-up at load, live head-turn test on the camera check page |
 | 2026-11-18 | Claude Code (Anthropic) | Summary of the course rubric against the project; weekly progress table in the README and week 7 notes; online demo: `FACE_RECOGNITION_ENABLED` switch (backend and frontend, QR-only kiosk), SSO-only first admin (`INITIAL_ADMIN_EMAIL`), PostgreSQL URLs with psycopg, `render.yaml` and `vercel.json`, deployment docs (with pytest tests) |
+| 2026-11-18 | Claude Code (Anthropic) | Options to make QR codes without internet; personal QR codes signed in the browser with a key per user (TOTP-style, Web Crypto), `POST /me/qr-key`, check in `POST /access/qr`, SSO sign-in for members, "My QR" page (with pytest tests) |
 
 ### Third-party libraries
 

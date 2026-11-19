@@ -61,6 +61,9 @@ Full design in `docs/architecture.md`. In short:
 - **QR codes**: HMAC-signed tokens `{user_id, exp, nonce}` made with
   `create_token`/`verify_token`, with their **own secret** (never the login token secret).
   Issued by an admin, valid 30–60 s, single use through `used_qr_nonces`.
+  **Personal codes** ("My QR"): the user's browser signs them with a key of their own
+  (`users.qr_key`, from `POST /me/qr-key`), so they work without internet. Members can
+  sign in with SSO for this; every admin endpoint still uses `require_admin`.
 - **Access log**: every attempt goes to `access_events`; reports filter by date and user.
   Access point endpoints use a terminal key, not SSO.
 - **SSO**: Authlib in the backend with any OpenID Connect provider (Google by default,
@@ -98,7 +101,9 @@ backend/
                        (signature, expiry, single use), record_access (writes access_events,
                        with the reason, for both; the kiosk is not told face reasons)
   app/qr.py            Admin-only POST /users/{id}/qr; create_qr_token / read_qr_token
-                       ("<user_id>:<nonce>" signed with QR_SECRET)
+                       ("<user_id>:<nonce>" signed with QR_SECRET); personal codes:
+                       POST /me/qr-key (any user, key in users.qr_key), read_personal_qr
+                       ("P:<user_id>:<step>:<nonce>:<hmac>", TOTP-style, 30 s, step +/- 1)
   tests/               pytest; conftest.py gives each test an in-memory SQLite database
 frontend/
   src/main.jsx         Entry point: loads i18n, wraps the app in BrowserRouter and AuthProvider
@@ -116,7 +121,10 @@ frontend/
                        HistoryPage (/history: day range + user filters, summary, reason)
   src/kiosk/           kioskApi.js: checkFace, checkQr (send X-Terminal-Key);
                        qrScanner.js: readQrFromVideo (jsQR on the camera picture)
-                       (QrPage: /users/:userId/qr, renews the code when it expires)
+                       (QrPage: /users/:userId/qr, renews the code when it expires;
+                       MyQrPage: /my-qr, any role, codes made offline in the browser)
+  src/qr/              personalQr.js: gets/keeps the personal key (sessionStorage),
+                       makePersonalQr signs with Web Crypto (https or localhost only)
   src/users/           CreateUserForm and usersApi (calls to /users)
   src/history/         historyApi.js: listAccessEvents, local day -> UTC moment helpers
   src/face/            faceModel.js: loads face-api lazily (and warms up the 3 networks),

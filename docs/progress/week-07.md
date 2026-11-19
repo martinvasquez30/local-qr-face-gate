@@ -54,6 +54,20 @@ open and closed eyes gave almost the same value.
 | `render.yaml`, `frontend/vercel.json` | **New.** Backend on Render (Blueprint) and frontend on Vercel. |
 | `backend/tests/` | 8 new tests (switch off, first admin, PostgreSQL URL, `/health`). |
 
+### 5. Personal QR codes made without internet (not committed yet)
+
+| File | Change |
+|---|---|
+| `backend/app/qr.py` | `POST /me/qr-key` (any logged-in user) gives the user a secret key of their own; `read_personal_qr` checks codes `P:<user_id>:<step>:<nonce>:<signature>` (HMAC-SHA256 with that key, current period plus or minus one). |
+| `backend/app/models.py` | New nullable `users.qr_key` column (added to existing databases by `_add_new_columns`). |
+| `backend/app/access.py` | `POST /access/qr` accepts both kinds of code; same reasons and single use through `used_qr_nonces`. |
+| `backend/app/auth.py` | SSO lets in any active user (`find_sso_user`). Members only reach `/auth/me` and `/me/qr-key`; the rest stays `require_admin`. |
+| `frontend/src/qr/personalQr.js` | **New.** Gets and keeps the key, signs codes with Web Crypto, every 30 s, without the network. |
+| `frontend/src/pages/MyQrPage.jsx` | **New.** `/my-qr` for every role: the code, a countdown, "New code" and whether the device is online. |
+| `frontend/src/App.jsx`, `NavBar.jsx`, `AuthContext.jsx` | Route and link for "My QR"; members only see "Home" and "My QR"; signing out forgets the key. |
+| `frontend/src/App.css` | Styles for the online/offline line; on phones the nav links wrap to a new row (with five links they no longer fit in 360 px). |
+| `backend/tests/` | 12 new or changed tests (key, single use, clock window, another user's id, new key, deactivated user, member SSO). |
+
 ## Design decisions
 
 | Decision | Why |
@@ -63,6 +77,8 @@ open and closed eyes gave almost the same value.
 | No demo admin on a public server | `admin123` is in the README, so anyone could sign in. With `INITIAL_ADMIN_EMAIL` the first admin can only use SSO. |
 | Supabase through the session pooler | The direct connection needs IPv6, which Render's free plan does not have. |
 | Render for the backend | Vercel is made for frontends; FastAPI needs a long-running Python server. |
+| Personal QR codes: a key per user, TOTP-style | Putting `QR_SECRET` on phones would let anyone sign codes for anyone. A key per user only makes codes for that user, uses only `hmac` (stdlib) and Web Crypto (built into the browser), and is the same idea as an authenticator app. |
+| A random nonce in each personal code | Single use like admin codes, and "New code" allows going in and out within the same 30 seconds. |
 
 ## How to verify
 

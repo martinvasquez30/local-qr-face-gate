@@ -42,24 +42,24 @@ def fragment(response) -> dict:
     return {key: values[0] for key, values in parse_qs(urlsplit(location).fragment).items()}
 
 
-# --- find_sso_admin ---------------------------------------------------------
+# --- find_sso_user ----------------------------------------------------------
 
 
-def test_an_active_admin_is_found_ignoring_case_and_spaces(db):
-    user = auth.find_sso_admin(db, "  Admin@Example.COM ")
+def test_an_active_user_is_found_ignoring_case_and_spaces(db, member):
+    user = auth.find_sso_user(db, "  Admin@Example.COM ")
 
     assert user is not None
     assert user.email == ADMIN_EMAIL
+    # Members too: they log in to make their own QR codes.
+    assert auth.find_sso_user(db, member.email).id == member.id
 
 
-def test_unknown_emails_members_and_inactive_admins_are_not_found(db, member):
-    assert auth.find_sso_admin(db, "nobody@example.com") is None
-    assert auth.find_sso_admin(db, member.email) is None
+def test_unknown_emails_and_inactive_users_are_not_found(db, member):
+    assert auth.find_sso_user(db, "nobody@example.com") is None
 
-    admin = auth.find_sso_admin(db, ADMIN_EMAIL)
-    admin.is_active = False
+    member.is_active = False
     db.commit()
-    assert auth.find_sso_admin(db, ADMIN_EMAIL) is None
+    assert auth.find_sso_user(db, member.email) is None
 
 
 # --- /auth/sso/login --------------------------------------------------------
@@ -109,8 +109,17 @@ def test_preferred_username_is_used_when_there_is_no_email(client, sso_on, monke
     assert "token" in fragment(response)
 
 
-def test_a_member_is_not_allowed(client, sso_on, monkeypatch, member):
+def test_a_member_logs_in_but_cannot_use_the_admin_api(client, sso_on, monkeypatch, member):
     fake_provider(monkeypatch, {"email": member.email, "email_verified": True})
+
+    token = fragment(callback(client))["token"]
+
+    assert client.get("/auth/me", headers=auth_header(token)).json()["role"] == "member"
+    assert client.get("/users", headers=auth_header(token)).status_code == 403
+
+
+def test_an_unknown_email_is_not_allowed(client, sso_on, monkeypatch):
+    fake_provider(monkeypatch, {"email": "nobody@example.com", "email_verified": True})
 
     response = callback(client)
 

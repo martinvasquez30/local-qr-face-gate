@@ -45,6 +45,7 @@ the **access point** (kiosk). Internet is only needed to sign in with SSO.
 | SSO: backend endpoints (OpenID Connect, Google first) | Done (week 6) |
 | SSO: login button in the frontend, tested with a real Google OAuth client | Done (week 6) |
 | Online demo without face recognition (Vercel, Render, Supabase) | Code and config ready (week 7), not deployed yet |
+| Personal QR codes made by the user's device, also without internet (`/my-qr`, TOTP-style) | Done (week 7) |
 
 ## Design decisions
 
@@ -135,6 +136,41 @@ How it works (done in week 6):
 5. The result goes through the same `record_access` as faces, so both methods share one
    log. In the demo, the person takes a photo of the code with a phone and shows it to
    the kiosk; showing it a second time is denied.
+
+#### Personal QR codes made by the user's device (week 7)
+
+Admin codes need the server at the moment they are made. To let a user make their own
+code even when their phone has no connection to the server (for example, they were
+signed in and the internet went down), the user's device signs the codes itself. It works
+like an authenticator app (TOTP, RFC 6238):
+
+1. While online, the user signs in (SSO; members can now sign in too, but they only see
+   "Home" and "My QR") and opens "My QR" (`/my-qr`). The page calls `POST /me/qr-key`:
+   the server makes a random key for that user, stores it in `users.qr_key` and returns
+   it. The browser keeps it in `sessionStorage` (forgotten when the tab is closed or on
+   sign out).
+2. From then on, without the network, the browser makes a code every 30 seconds:
+   `P:<user_id>:<step>:<nonce>:<signature>`, where `step` is the number of 30-second
+   periods since 1970 and the signature is HMAC-SHA256 of `"<user_id>:<step>:<nonce>"`
+   with the key, computed with the browser's Web Crypto (`frontend/src/qr/personalQr.js`).
+3. `POST /access/qr` sees the `P:` prefix and calls `read_personal_qr`: it checks the
+   shape, recomputes the signature with that user's key, and accepts the current period,
+   the previous one and the next one (codes live 30-60 s, plus up to 30 s of clock
+   difference). The nonce goes to `used_qr_nonces` (prefixed `personal:`), so each code
+   works once. "New code" makes another nonce, so a person can go in and out within the
+   same 30 seconds.
+
+**Why a key per user and not `QR_SECRET` on the phone:** a secret copied from the
+browser could then sign codes for anyone. With a key per user, a copied key only makes
+codes for that one user. A new key (opening "My QR" in a new tab) replaces the old one,
+so a lost phone's codes stop working.
+
+**Limits:** the key is stored readable in the database, like any TOTP server (HMAC
+needs the same key on both sides); Ed25519 key pairs would avoid it, at the cost of a
+crypto library. Web Crypto only works on secure pages (https or `localhost`), so a phone
+that opens the local server as `http://192.168.x.x` gets a clear message instead of a
+code. Without a PWA the page must already be open: reloading it without a connection
+does not work.
 
 ### 6. Every access attempt is logged
 
@@ -338,7 +374,7 @@ SQLite in development, through SQLAlchemy (PostgreSQL on Supabase in the online 
 | `users` | id, email, name, role (`admin` / `member`), is_active, password_hash (admins only), created_at, updated_at | Done |
 | `face_templates` | id, user_id (unique: one per user), descriptor (average of the captures, 128 numbers), created_at | Done |
 | `access_events` | id, user_id (empty if nobody was recognized), method (`face` / `qr`), result (`granted` / `denied`), direction (`in` / `out`), distance (face only), reason (denied only), created_at | Done |
-| `used_qr_nonces` | nonce (primary key, so it is unique), used_at | Done |
+| `used_qr_nonces` | nonce (primary key, so it is unique; personal codes are prefixed `personal:`), used_at | Done |
 
 Users are deactivated, never deleted, because access events point to them.
 

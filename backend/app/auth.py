@@ -1,10 +1,12 @@
-"""How admins log in.
+"""How users log in.
 
 There are two ways, and both end with the same signed access token:
 
 - SSO with an OpenID Connect provider (Google by default):
-  ``/auth/sso/login`` and ``/auth/sso/callback``.
+  ``/auth/sso/login`` and ``/auth/sso/callback``. Any active user: admins get
+  the admin portal, members only their "My QR" page.
 - The temporary email/password login (``/auth/login``), kept for development.
+  Only admins have a password, so only they can use it.
 
 This is the only module that knows how users log in: the rest of the API asks
 for the current user through ``get_current_user`` (or ``require_admin``).
@@ -142,10 +144,14 @@ oauth.register(
 )
 
 
-def find_sso_admin(db: Session, email: str) -> User | None:
-    """The active admin with this email, or None. Only admins use the portal."""
+def find_sso_user(db: Session, email: str) -> User | None:
+    """The active user with this email, or None.
+
+    Members can log in too, to make their own QR codes. What each role can do
+    is decided by the endpoints (require_admin), not here.
+    """
     user = db.scalar(select(User).where(User.email == normalize_email(email)))
-    if user is None or not user.is_active or user.role != ROLE_ADMIN:
+    if user is None or not user.is_active:
         return None
     return user
 
@@ -191,7 +197,7 @@ async def sso_callback(request: Request, db: DbSession) -> RedirectResponse:
     if not email or claims.get("email_verified") is False:
         return _back_to_frontend(error="sso_not_allowed")
 
-    user = find_sso_admin(db, email)
+    user = find_sso_user(db, email)
     if user is None:
         return _back_to_frontend(error="sso_not_allowed")
 

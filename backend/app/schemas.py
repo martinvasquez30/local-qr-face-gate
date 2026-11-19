@@ -110,6 +110,15 @@ class QrIssued(BaseModel):
     expires_in: int
 
 
+class PersonalQrKey(BaseModel):
+    """The secret key the user's device uses to make personal QR codes offline."""
+
+    key: str
+    user_id: int
+    # A new code every `step_seconds` (30).
+    step_seconds: int
+
+
 class AccessDecision(BaseModel):
     """The server's answer to the access point. It never includes face data."""
 

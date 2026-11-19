@@ -11,11 +11,12 @@
     "home": "Home",
     "users": "Users",
     "kiosk": "Access point",
-    "history": "History"
+    "history": "History",
+    "myQr": "My QR"
   },
   "login": {
     "title": "Sign in",
-    "subtitle": "Use your administrator account.",
+    "subtitle": "Use your organization account.",
     "email": "Email",
     "password": "Password",
     "submit": "Sign in",
@@ -54,7 +55,7 @@
     "forbidden": "You do not have permission to do this.",
     "inactive_user": "Your account has been deactivated.",
     "invalid_input": "Check the data you entered: some field is not valid.",
-    "sso_not_allowed": "This account does not have administrator access. Ask an administrator to add you with this email.",
+    "sso_not_allowed": "This account is not registered. Ask an administrator to add you with this email.",
     "sso_failed": "Sign-in could not be completed. Please try again.",
     "sso_not_configured": "Single sign-on is not set up on the server yet.",
     "sso_unavailable": "The sign-in provider could not be reached. Check the internet connection. The access point keeps working without internet.",
@@ -72,7 +73,8 @@
     "qr_already_used": "This QR code was already used.",
     "liveness_failed": "No head turn was detected. Turn your head to the side shown.",
     "invalid_date_range": "The \"from\" date is after the \"to\" date.",
-    "face_recognition_disabled": "Face recognition is turned off on this server. Use a QR code."
+    "face_recognition_disabled": "Face recognition is turned off on this server. Use a QR code.",
+    "secure_context_required": "This browser cannot make QR codes on this page: it must be opened with https (or on localhost)."
   },
   "kiosk": {
     "title": "Access point",
@@ -85,7 +87,7 @@
     "lookFront": "Now look straight ahead",
     "granted": "Welcome, {{name}}",
     "denied": "Not recognized",
-    "qrFallback": "Not recognized? Use a QR code (ask an administrator for one).",
+    "qrFallback": "Not recognized? Show your QR code (\"My QR\" in the app) or ask an administrator for one.",
     "reconfigure": "Change settings",
     "direction": {
       "in": "Entry",
@@ -171,6 +173,15 @@
     "expiresIn": "Expires in {{seconds}} s · renews by itself",
     "help": "Show it to the access point camera; a photo on a phone works. It works only once.",
     "renew": "Create another"
+  },
+  "myQr": {
+    "title": "My QR code",
+    "online": "Online",
+    "offline": "No internet connection: your code keeps working",
+    "changesIn": "Changes in {{seconds}} s",
+    "help": "Show it to the access point camera. Each code works only once. It is made on this device, so it also works without internet while this page stays open.",
+    "newCode": "New code",
+    "needsConnection": "The first time, this page needs a connection to the server to get your key. After that it works without internet."
   },
   "history": {
     "title": "Access history",

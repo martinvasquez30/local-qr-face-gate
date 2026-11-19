@@ -53,6 +53,7 @@ app.include_router(auth.router)
 app.include_router(users.router)
 app.include_router(faces.router)
 app.include_router(qr.router)
+app.include_router(qr.me_router)
 app.include_router(access_events.router)
 app.include_router(access.router)
 

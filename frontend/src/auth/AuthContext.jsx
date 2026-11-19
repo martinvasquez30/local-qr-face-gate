@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { apiRequest } from "../api.js";
+import { forgetPersonalQrKey } from "../qr/personalQr.js";
 
 // This file is the only place in the frontend that knows how login works.
 // There are two ways in: SSO (the backend sends the browser back with a token
@@ -101,9 +102,12 @@ export function AuthProvider({ children }) {
     setUser(data.user);
   }, []);
 
-  // The token cannot be revoked on the server yet; signing out forgets it.
+  // The token cannot be revoked on the server yet; signing out forgets it,
+  // and the personal QR key too (the next person on this device must not
+  // make codes in this user's name).
   const logout = useCallback(() => {
     clearToken();
+    forgetPersonalQrKey();
     setToken(null);
     setUser(null);
     setSsoError(null);
