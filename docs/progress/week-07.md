@@ -39,7 +39,7 @@ open and closed eyes gave almost the same value.
 | `README.md` | New "Project status and weekly progress" section: current status and one row per week, linking to these notes. Old statements fixed (SSO button, threshold, offline test). |
 | `docs/progress/week-07.md` | **New.** This file. |
 
-### 4. Online demo without face recognition (not committed yet)
+### 4. Online demo without face recognition (`477a217`, `93bb711`)
 
 | File | Change |
 |---|---|
@@ -91,8 +91,10 @@ open and closed eyes gave almost the same value.
 
 ## Known limitations
 
-- The online demo is not deployed yet: the accounts on Vercel, Render and Supabase are
-  created by the author (steps in the README).
+- The online demo is live at https://local-qr-face-gate.vercel.app since Nov 18. Supabase (`us-east-1`) uses its
+  own database user with a private `app` schema; Render runs in Virginia, next to it.
+  The dev admin (`admin123`) does not exist there: the public server answers
+  `invalid_credentials`.
 - Render's free plan stops the backend after 15 minutes without requests; the next one
   takes about a minute.
 - Week 4 (Oct 26–Nov 1) had no commits, and the README was not updated in week 3.

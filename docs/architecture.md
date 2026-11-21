@@ -44,7 +44,7 @@ the **access point** (kiosk). Internet is only needed to sign in with SSO.
 | Face verification at the access point (`/kiosk`, `POST /access/face`) | Done (week 6) |
 | SSO: backend endpoints (OpenID Connect, Google first) | Done (week 6) |
 | SSO: login button in the frontend, tested with a real Google OAuth client | Done (week 6) |
-| Online demo without face recognition (Vercel, Render, Supabase) | Code and config ready (week 7), not deployed yet |
+| Online demo without face recognition (Vercel, Render, Supabase) | Done (week 7): https://local-qr-face-gate.vercel.app |
 | Personal QR codes made by the user's device, also without internet (`/my-qr`, TOTP-style) | Done (week 7) |
 
 ## Design decisions

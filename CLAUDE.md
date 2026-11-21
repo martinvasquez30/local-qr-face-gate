@@ -200,7 +200,8 @@ Development login: `admin@example.com` / `admin123`.
 
 ### Next steps
 
-1. Deploy the online demo (Supabase, Render, Vercel; steps in the README) and test it.
+1. Online demo is live at https://local-qr-face-gate.vercel.app (Render backend sleeps after 15 min idle).
+   Still to test there: SSO sign-in (Google redirect URI) and the kiosk QR flow.
 2. Threshold check with a few people (distances and reasons are in the history page).
 3. Demo script (5 minutes) and rehearsal.
 4. Keep `docs/progress/week-07.md` and the README weekly table up to date; the rubric checks

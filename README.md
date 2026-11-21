@@ -29,8 +29,9 @@ support (no external translation APIs).
 
 **Current status (week 7):** the full flow works on one machine without internet: SSO and
 user management, face enrollment, access point with face recognition (with a head-turn
-liveness check) and QR fallback, and the access history with filters. An online demo
-(without face recognition, see [Online demo](#online-demo-deployment)) is being set up.
+liveness check) and QR fallback, and the access history with filters. The online demo
+(without face recognition, see [Online demo](#online-demo-deployment)) is live at
+https://local-qr-face-gate.vercel.app.
 
 Each week's changes are described in detail in its own Markdown file in
 [`docs/progress/`](docs/progress/): goal, changed files, design decisions, how to verify,
@@ -193,6 +194,8 @@ The product is meant to run **locally**: face descriptors are biometric data and
 reach a cloud server. The online demo runs the **same code** with face recognition turned
 off, so the rest of the system can be tried from any browser:
 
+**Live:** https://local-qr-face-gate.vercel.app (backend: https://access-control-api-3w44.onrender.com/health)
+
 | Feature | Local installation | Online demo |
 |---|---|---|
 | SSO login, user management | Yes | Yes |
@@ -287,7 +290,7 @@ values, and register it in `frontend/src/i18n.js` (`LANGUAGE_NAMES` and `resourc
 - [x] Face model and camera in the browser (`/face-check`)
 - [x] Face enrollment: 3 captures averaged into one template per user (`/users/{id}/face`)
 - [x] Full flow checked with the internet disconnected
-- [ ] Online demo: Vercel + Render + Supabase, face recognition only in the local installation (code and config ready, not deployed yet)
+- [x] Online demo: Vercel + Render + Supabase, face recognition only in the local installation (https://local-qr-face-gate.vercel.app)
 - [x] Liveness check: the kiosk asks for a head turn to a random side (stops photos)
 
 ## Credits and AI usage
