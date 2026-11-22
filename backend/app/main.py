@@ -14,7 +14,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from starlette.middleware.sessions import SessionMiddleware
 
-from app import access, access_events, auth, faces, qr, users
+from app import access, access_events, auth, faces, qr, terminals, users
 from app.config import settings
 from app.database import init_db
 
@@ -56,6 +56,7 @@ app.include_router(qr.router)
 app.include_router(qr.me_router)
 app.include_router(access_events.router)
 app.include_router(access.router)
+app.include_router(terminals.router)
 
 
 @app.exception_handler(RequestValidationError)

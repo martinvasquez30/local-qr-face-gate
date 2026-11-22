@@ -2,8 +2,8 @@
 
 from datetime import datetime, timezone
 
-from sqlalchemy import JSON, DateTime, ForeignKey, String
-from sqlalchemy.orm import Mapped, mapped_column, validates
+from sqlalchemy import JSON, DateTime, ForeignKey, String, UniqueConstraint
+from sqlalchemy.orm import Mapped, mapped_column, relationship, validates
 
 from app.database import Base
 
@@ -65,6 +65,15 @@ class User(Base):
         DateTime(timezone=True), default=_utc_now, onupdate=_utc_now
     )
 
+    # The user's enrolled face, if any. "selectin" loads the faces of a whole
+    # list of users in one extra query, not one query per user.
+    face_template: Mapped["FaceTemplate | None"] = relationship(lazy="selectin")
+
+    @property
+    def has_face(self) -> bool:
+        """True when a face is enrolled. Only this yes/no leaves the server."""
+        return self.face_template is not None
+
     @validates("email")
     def _normalize_email(self, _key: str, email: str) -> str:
         # Runs every time `email` is assigned, so no code path can store an
@@ -120,7 +129,28 @@ class AccessEvent(Base):
     # (no head turn), "face_no_match", "face_ambiguous" or "no_faces_enrolled".
     # QR: "qr_invalid", "qr_expired", "qr_already_used" or "user_inactive".
     reason: Mapped[str | None] = mapped_column(String(30))
+    # Where the access point is ("library", "physics_lab"...; see Location in
+    # schemas.py). Empty for events logged before kiosks had a location.
+    location: Mapped[str | None] = mapped_column(String(30))
     # Stored in UTC, like the user dates. Indexed because reports filter by it.
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=_utc_now, index=True
     )
+
+
+class Terminal(Base):
+    """An access point (kiosk), known by its place and whether it is an entry
+    or an exit. Nobody registers it by hand: its row is created the first time
+    the kiosk talks to the server, and every later contact (an access check or
+    the heartbeat every 30 s) updates `last_seen_at`.
+    """
+
+    __tablename__ = "terminals"
+    # One row per place and direction: "library, entry" is one terminal.
+    __table_args__ = (UniqueConstraint("location", "direction"),)
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    location: Mapped[str] = mapped_column(String(30))
+    direction: Mapped[str] = mapped_column(String(3))  # DIRECTION_IN or DIRECTION_OUT
+    # Stored in UTC. The admin home shows "connected" when it is recent.
+    last_seen_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_utc_now)

@@ -36,6 +36,8 @@ class UserOut(BaseModel):
     name: str
     role: str
     is_active: bool
+    # Whether a face is enrolled (the face numbers themselves are never sent).
+    has_face: bool = False
 
 
 class UserCreate(BaseModel):
@@ -84,6 +86,12 @@ class FaceStatus(BaseModel):
 
 Direction = Literal["in", "out"]
 
+# Where an access point is. A fixed list, so the UI can translate each place
+# (locations.<code> in es.json / en.json). To add a place, add it here and there.
+Location = Literal[
+    "main_entrance", "library", "physics_lab", "computer_lab", "chemistry_lab", "auditorium"
+]
+
 
 class FaceAccessRequest(BaseModel):
     """What the access point sends: the face it sees (128 numbers), never a photo."""
@@ -94,6 +102,8 @@ class FaceAccessRequest(BaseModel):
     # check: a flat photo cannot). Required, so a kiosk can never skip the
     # check by leaving it out.
     liveness_passed: bool
+    # Optional, so a kiosk set up before places existed keeps working.
+    location: Location | None = None
 
 
 class QrAccessRequest(BaseModel):
@@ -101,6 +111,25 @@ class QrAccessRequest(BaseModel):
 
     token: str = Field(min_length=1, max_length=2000)
     direction: Direction = "in"
+    location: Location | None = None
+
+
+class HeartbeatRequest(BaseModel):
+    """What the kiosk sends every 30 s to say "I am here"."""
+
+    location: Location
+    direction: Direction = "in"
+
+
+class TerminalOut(BaseModel):
+    """An access point as the admin home shows it."""
+
+    location: str
+    direction: str
+    last_seen_at: datetime
+    # Counted by the server, so a wrong clock in the browser does not matter.
+    seconds_since_seen: int
+    is_online: bool
 
 
 class QrIssued(BaseModel):
@@ -144,6 +173,7 @@ class AccessEventOut(BaseModel):
     distance: float | None
     # Why a denied attempt was denied, as a translatable code.
     reason: str | None
+    location: str | None
     created_at: datetime
 
     @field_validator("created_at")
