@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { errorCodeOf } from "../api.js";
 import { useAuth } from "../auth/AuthContext.jsx";
 import ErrorMessage from "../components/ErrorMessage.jsx";
+import FilterTabs from "../components/FilterTabs.jsx";
 import { FACE_RECOGNITION_ENABLED } from "../config.js";
 import CreateUserForm from "../users/CreateUserForm.jsx";
 import { listUsers, updateUser } from "../users/usersApi.js";
@@ -14,7 +15,8 @@ function UsersPage() {
   const [users, setUsers] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [errorCode, setErrorCode] = useState(null);
-  const [showInactive, setShowInactive] = useState(false);
+  // Which users to show: "all", "active" or "inactive".
+  const [statusFilter, setStatusFilter] = useState("active");
   const [search, setSearch] = useState("");
   // Id of the user whose button was just clicked, to disable it meanwhile.
   const [busyUserId, setBusyUserId] = useState(null);
@@ -25,7 +27,9 @@ function UsersPage() {
     const controller = new AbortController();
     setIsLoading(true);
 
-    listUsers(token, { includeInactive: showInactive, signal: controller.signal })
+    // Always every user: the status tabs filter in the browser, so changing
+    // tabs needs no new request.
+    listUsers(token, { includeInactive: true, signal: controller.signal })
       .then((data) => {
         setUsers(data);
         setErrorCode(null);
@@ -37,10 +41,10 @@ function UsersPage() {
         if (!controller.signal.aborted) setIsLoading(false);
       });
 
-    // If the checkbox changes before the answer arrives, the old request is
+    // If the list is reloaded before the answer arrives, the old request is
     // cancelled, so an outdated list never replaces a newer one.
     return () => controller.abort();
-  }, [token, showInactive, reloadCount]);
+  }, [token, reloadCount]);
 
   function reload() {
     setReloadCount((count) => count + 1);
@@ -59,13 +63,15 @@ function UsersPage() {
     }
   }
 
-  // Search is done in the browser: the list is small, so no extra API call.
+  // Search and status are filtered in the browser: the list is small.
   const searchText = search.trim().toLowerCase();
-  const visibleUsers = users.filter(
-    (user) =>
-      user.name.toLowerCase().includes(searchText) ||
-      user.email.includes(searchText)
-  );
+  const visibleUsers = users.filter((user) => {
+    const matchesText =
+      user.name.toLowerCase().includes(searchText) || user.email.includes(searchText);
+    const matchesStatus =
+      statusFilter === "all" || user.is_active === (statusFilter === "active");
+    return matchesText && matchesStatus;
+  });
 
   return (
     <section className="card card--wide">
@@ -82,17 +88,25 @@ function UsersPage() {
             onChange={(event) => setSearch(event.target.value)}
           />
         </label>
-        <label className="checkbox">
-          <input
-            type="checkbox"
-            checked={showInactive}
-            onChange={(event) => setShowInactive(event.target.checked)}
-          />
-          <span>{t("users.showInactive")}</span>
-        </label>
+        <FilterTabs
+          label={t("users.fields.status")}
+          value={statusFilter}
+          onChange={setStatusFilter}
+          options={[
+            { value: "all", label: t("users.filter.all") },
+            { value: "active", label: t("users.filter.active") },
+            { value: "inactive", label: t("users.filter.inactive") },
+          ]}
+        />
       </div>
 
       <ErrorMessage code={errorCode} />
+
+      {!isLoading && (
+        <p className="history-summary" role="status">
+          {t("users.count", { count: visibleUsers.length })}
+        </p>
+      )}
 
       {isLoading && users.length === 0 ? (
         <p className="loading" role="status">
@@ -108,6 +122,7 @@ function UsersPage() {
               <th scope="col">{t("users.fields.email")}</th>
               <th scope="col">{t("users.fields.role")}</th>
               <th scope="col">{t("users.fields.status")}</th>
+              {FACE_RECOGNITION_ENABLED && <th scope="col">{t("users.fields.face")}</th>}
               <th scope="col">
                 <span className="visually-hidden">{t("users.fields.actions")}</span>
               </th>
@@ -137,6 +152,13 @@ function UsersPage() {
                       {user.is_active ? t("users.status.active") : t("users.status.inactive")}
                     </span>
                   </td>
+                  {FACE_RECOGNITION_ENABLED && (
+                    <td data-label={t("users.fields.face")}>
+                      <span className={`badge badge--${user.has_face ? "active" : "inactive"}`}>
+                        {user.has_face ? t("users.face.enrolled") : t("users.face.missing")}
+                      </span>
+                    </td>
+                  )}
                   <td className="users-table__actions">
                     {/* Only active users can be enrolled or get a QR code. */}
                     {user.is_active && (

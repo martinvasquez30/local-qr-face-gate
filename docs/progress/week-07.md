@@ -1,6 +1,6 @@
 # Week 7 (Nov 16–22, 2026): safer face checks and the online demo
 
-> Work in progress: these notes are updated during the week. Last update: Nov 18, 2026.
+> Work in progress: these notes are updated during the week. Last update: Nov 21, 2026.
 
 ## Goal
 
@@ -68,6 +68,66 @@ open and closed eyes gave almost the same value.
 | `frontend/src/App.css` | Styles for the online/offline line; on phones the nav links wrap to a new row (with five links they no longer fit in 360 px). |
 | `backend/tests/` | 12 new or changed tests (key, single use, clock window, another user's id, new key, deactivated user, member SSO). |
 
+### 6. New visual design, part 1: base and app frame (not committed yet)
+
+The look comes from a Figma Make prototype. It is rebuilt with the course stack (React
+with JSX, Bootstrap 5 and our own CSS, Material Design as a visual guide) instead of
+copying its code (one 1,500-line TypeScript file with made-up data).
+
+| File | Change |
+|---|---|
+| `frontend/package.json`, `src/main.jsx` | Bootstrap 5 (CSS only, loaded before our CSS so our rules win). Its breakpoints and utility classes (`d-none d-lg-flex`, `d-flex`, `gap-3`...) show or hide each menu. |
+| `frontend/src/App.css` | Design tokens: the prototype colors, an 8px spacing scale, shadows for elevation, system fonts (no download, works offline). Bootstrap's `--bs-*` variables point to them, so dark mode keeps working. Form borders now reach 3:1 contrast. |
+| `frontend/src/components/AppShell.jsx`, `Sidebar.jsx`, `TopBar.jsx`, `BottomNav.jsx` | **New.** Logged-in frame: side menu from 992px, bottom menu on phones and tablets, top bar with the page name, language and (on phones) logout. |
+| `frontend/src/components/navItems.js` | **New.** The menu entries in one list, read by both menus. |
+| `frontend/src/components/PublicLayout.jsx`, `Brand.jsx`, `Icon.jsx` | **New.** Frame for login, loading and kiosk; logo; SVG icons bundled with the app. |
+| `frontend/src/components/NavBar.jsx` | Removed: replaced by the two menus. |
+| `frontend/src/locales/es.json`, `en.json` | Menu texts: short kiosk label, logout, privacy note. |
+
+### 7. Prototype features, part 2 (not committed yet)
+
+Only the features that fit the design were added. Almost all are calculated in the browser
+from the API that already existed; the backend only gained a yes/no for enrolled faces.
+
+| File | Change |
+|---|---|
+| `backend/app/models.py`, `schemas.py` | `User.face_template` relationship and `has_face` property: `/users` now says whether each user has a face enrolled (never the numbers). |
+| `backend/tests/test_faces.py` | 1 new test: `has_face` before enrolling, after enrolling and after deleting. |
+| `frontend/src/dashboard/` | **New.** Admin home: today's granted and denied attempts, success rate, active users (and how many have a face), attempts per hour as a CSS bar chart, and the latest 5 attempts. Built from `GET /access-events` and `GET /users`. |
+| `frontend/src/history/stats.js`, `csv.js`, `describeEvent.js`, `EventsTable.jsx` | **New.** Totals, per-hour counts and filters (no React); CSV export made in the browser; the texts of one event, shared by the table and the CSV; the events table, shared by home and history. |
+| `frontend/src/pages/HistoryPage.jsx` | Method and result filters, "Clear filters", 20 events per page, "Export CSV" (every filtered event, `;` as separator so Excel in Spanish opens it in columns). Filters in a Bootstrap grid. |
+| `frontend/src/pages/IssueQrPage.jsx` | **New.** `/qr` ("Issue QR"): choose an active user, then the existing QR page shows the code. In the side menu; on phones it is the main button of the home page. |
+| `frontend/src/pages/UsersPage.jsx`, `components/FilterTabs.jsx` | "All / Active / Inactive" tabs instead of the checkbox, the number of users shown, and a "Face" column. |
+| `frontend/src/pages/QrPage.jsx` | A bar under the countdown that empties as the code expires. |
+| `frontend/src/components/BackendStatus.jsx`, `TopBar.jsx` | The server status moved to the top bar of every page. It is checked every 30 s and when the network comes back or goes away. On phones only the dot shows. |
+| `frontend/src/components/Pagination.jsx` | **New.** "Showing 1–20 of 46" with previous and next. |
+
+Left out on purpose:
+
+| Prototype feature | Why not |
+|---|---|
+| "Pending sync" on terminals | The design has no sync: each access point talks to the local server at the moment. The connected / offline status was added later (section 8). |
+| QR codes of 5–30 minutes or for many uses | Codes last one minute and work once; a long-lived code is easy to share or photograph. |
+| "Continue with Microsoft" | SSO already works with any OpenID Connect provider (`SSO_METADATA_URL`); the button shows its name. |
+| Lighting, centering and distance checks while enrolling | Fake in the prototype. A real one needs more face-api work: possible later. |
+| Surname, "U-00184" id, "More filters", "Need help?" | No data or behavior behind them. |
+
+### 8. Access point places and status (not committed yet)
+
+Each kiosk is set up with a place (library, physics lab, computer lab...), and the admin
+home shows every access point as connected or offline, like the prototype's terminal list.
+
+| File | Change |
+|---|---|
+| `backend/app/schemas.py` | `Location`: the fixed list of places. `location` (optional) in the face and QR checks; `HeartbeatRequest`; `TerminalOut` with `seconds_since_seen` and `is_online`, counted by the server. |
+| `backend/app/models.py` | New `terminals` table (place, direction, last contact). New nullable `access_events.location` column, added to existing databases by `_add_new_columns`. |
+| `backend/app/terminals.py` | **New.** `touch_terminal` (creates or updates the row) and admin-only `GET /terminals`. Connected = a contact in the last 90 s. |
+| `backend/app/access.py` | `POST /access/heartbeat` (terminal key). Every check stores the place and also counts as a contact. |
+| `backend/tests/test_terminals.py` | **New.** 9 tests: key, unknown place, one row per place and direction, admins only, online and offline, place in the log, kiosks without a place. |
+| `frontend/src/kiosk/locations.js`, `pages/KioskPage.jsx`, `kiosk/kioskApi.js` | The setup asks for the place; a kiosk saved without one asks again. Heartbeat every 30 s. The title shows "Library · Entry". |
+| `frontend/src/dashboard/TerminalsPanel.jsx`, `terminalsApi.js`, `formatAgo.js` | **New.** "Access points" card: place, entry or exit, status pill (color and text) and "2 minutes ago" with the browser's `Intl.RelativeTimeFormat`. Reloads every 30 s. |
+| `frontend/src/history/describeEvent.js` | New "Place" column in the history, the home table and the CSV. |
+
 ## Design decisions
 
 | Decision | Why |
@@ -79,6 +139,17 @@ open and closed eyes gave almost the same value.
 | Render for the backend | Vercel is made for frontends; FastAPI needs a long-running Python server. |
 | Personal QR codes: a key per user, TOTP-style | Putting `QR_SECRET` on phones would let anyone sign codes for anyone. A key per user only makes codes for that user, uses only `hmac` (stdlib) and Web Crypto (built into the browser), and is the same idea as an authenticator app. |
 | A random nonce in each personal code | Single use like admin codes, and "New code" allows going in and out within the same 30 seconds. |
+| Prototype as a visual reference, not as code | Its code is one large file with fake data, hardcoded Spanish texts and features the backend does not have (terminal sync, long-lived QR codes). Small components keep each part easy to explain. |
+| Bootstrap CSS only, no Bootstrap JavaScript | It is the course framework for grid, breakpoints and utilities; React state already opens and closes things. |
+| Bottom menu on phones and tablets, side menu from 992px | Material Design navigation: thumbs reach the bottom bar; large screens have room for labels. The current page is marked with a shape and bold text, not only with color. |
+| System fonts instead of Google Fonts | Google Fonts needs internet, and the app must work offline. |
+| Dashboard numbers calculated in the browser | No new endpoint: today's events are few, and `stats.js` has small functions that are easy to explain and check. |
+| Method/result filters and pages in the browser | The server already filters by days and user, which cuts the list the most. Doing the rest in the browser needs no API change. |
+| CSV made in the browser, without a library | A CSV is text with separators; `toCsv` is a few lines and quotes values that contain `;` or quotes. |
+| Bar chart with HTML and CSS | One `<li>` per hour with a height in %. No chart library to learn or credit, and screen readers get the numbers as text. |
+| Places from a fixed list, not free text | Each place can be translated and filtered, and the server rejects anything else (422). Adding one is a line in `schemas.py`, `locations.js` and the two language files. |
+| Terminals created by their first contact | No screen to register kiosks: setting one up is enough. A heartbeat every 30 s keeps an idle kiosk "connected". |
+| The server says "connected", not the browser | It counts the seconds with its own clock, so a wrong clock on the admin's computer does not change the result. |
 
 ## How to verify
 

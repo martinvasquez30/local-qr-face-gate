@@ -96,10 +96,13 @@ backend/
                        already belongs to another user); require_face_recognition (403 when
                        FACE_RECOGNITION_ENABLED is false, also used by POST /access/face)
   app/access_events.py Admin-only GET /access-events (filters: start, end, user_id)
+  app/terminals.py     touch_terminal (place + direction, last contact) and admin-only
+                       GET /terminals (is_online: a contact in the last 90 s)
   app/access.py        Access point: require_terminal (X-Terminal-Key), POST /access/face,
                        find_match (threshold + margin, returns a denial reason), POST /access/qr
                        (signature, expiry, single use), record_access (writes access_events,
-                       with the reason, for both; the kiosk is not told face reasons)
+                       with the reason and place, for both; the kiosk is not told face reasons),
+                       POST /access/heartbeat (every 30 s from the kiosk)
   app/qr.py            Admin-only POST /users/{id}/qr; create_qr_token / read_qr_token
                        ("<user_id>:<nonce>" signed with QR_SECRET); personal codes:
                        POST /me/qr-key (any user, key in users.qr_key), read_personal_qr
@@ -112,21 +115,29 @@ frontend/
   src/locales/         es.json, en.json (own translation files)
   src/api.js           fetch wrapper; errors become ApiError with a stable code
   src/auth/            AuthContext and useAuth()
-  src/components/      LanguageSwitcher, BackendStatus, NavBar, ErrorMessage, Camera
-  src/pages/           LoginPage (SSO button + dev password form), HomePage, UsersPage,
+  src/components/      AppShell (Sidebar, TopBar, BottomNav; entries in navItems.js),
+                       PublicLayout, Brand, Icon, LanguageSwitcher, BackendStatus (top bar),
+                       FilterTabs, Pagination, ErrorMessage, Camera
+  src/pages/           LoginPage (SSO button + dev password form), HomePage (admins: AdminDashboard),
+                       UsersPage (status tabs, face column), IssueQrPage (/qr: pick a user),
                        FaceCheckPage (camera and face model check; live head-turn test),
                        EnrollFacePage (/users/:userId/face: consent, 3 captures, save),
-                       KioskPage (/kiosk: no user login; terminal key + entry/exit setup;
+                       KioskPage (/kiosk: no user login; terminal key + place + entry/exit setup;
                        asks for a head turn to a random side before each face check),
-                       HistoryPage (/history: day range + user filters, summary, reason)
-  src/kiosk/           kioskApi.js: checkFace, checkQr (send X-Terminal-Key);
+                       HistoryPage (/history: days, user, method, result; pages; CSV)
+  src/kiosk/           kioskApi.js: checkFace, checkQr, sendHeartbeat (send X-Terminal-Key);
+                       locations.js: places (same list as Location in schemas.py);
                        qrScanner.js: readQrFromVideo (jsQR on the camera picture)
                        (QrPage: /users/:userId/qr, renews the code when it expires;
                        MyQrPage: /my-qr, any role, codes made offline in the browser)
   src/qr/              personalQr.js: gets/keeps the personal key (sessionStorage),
                        makePersonalQr signs with Web Crypto (https or localhost only)
   src/users/           CreateUserForm and usersApi (calls to /users)
-  src/history/         historyApi.js: listAccessEvents, local day -> UTC moment helpers
+  src/history/         historyApi.js: listAccessEvents, local day -> UTC moment helpers;
+                       stats.js (totals, per hour, filters), csv.js (export), describeEvent.js,
+                       EventsTable.jsx (shared by home and history)
+  src/dashboard/       AdminDashboard, MetricCard, HourlyChart (CSS bars), TerminalsPanel
+                       (access points, connected / offline), terminalsApi.js, formatAgo.js
   src/face/            faceModel.js: loads face-api lazily (and warms up the 3 networks),
                        getDescriptor(video) -> 128 numbers,
                        getHeadTurn(video); headTurn.js: headTurn, hasTurned (liveness)

@@ -12,7 +12,12 @@
     "users": "Users",
     "kiosk": "Access point",
     "history": "History",
-    "myQr": "My QR"
+    "myQr": "My QR",
+    "kioskShort": "Kiosk",
+    "logout": "Log out",
+    "privacyTitle": "Privacy protected",
+    "privacyText": "Only face descriptors are stored, never photos.",
+    "issueQr": "Issue QR"
   },
   "login": {
     "title": "Sign in",
@@ -29,8 +34,9 @@
     "welcome": "Hello, {{name}}",
     "signedInAs": "Signed in as {{email}} · {{role}}",
     "description": "Face recognition and dynamic QR access control system.",
-    "logout": "Sign out",
-    "onlineDemo": "Online demo: face recognition only works in the local installation, because biometric data is never sent to the cloud. Users, QR codes, history, SSO and languages work here."
+    "onlineDemo": "Online demo: face recognition only works in the local installation, because biometric data is never sent to the cloud. Users, QR codes, history, SSO and languages work here.",
+    "issueQr": "Issue temporary QR",
+    "myQr": "Show my QR"
   },
   "roles": {
     "admin": "Administrator",
@@ -77,7 +83,6 @@
     "secure_context_required": "This browser cannot make QR codes on this page: it must be opened with https (or on localhost)."
   },
   "kiosk": {
-    "title": "Access point",
     "idle": "Look at the camera",
     "multiple": "One person at a time",
     "turn": {
@@ -98,7 +103,9 @@
       "subtitle": "Done once in this browser. It works without signing in and without internet.",
       "key": "Terminal key",
       "direction": "Door type",
-      "save": "Save"
+      "save": "Save",
+      "location": "Place",
+      "chooseLocation": "Choose where this access point is"
     },
     "useQr": "Use a QR code",
     "backToFace": "Back to face recognition",
@@ -139,7 +146,6 @@
     "title": "Users",
     "subtitle": "People registered in the system. Users are deactivated, never deleted.",
     "search": "Search by name or email",
-    "showInactive": "Show inactive users",
     "loading": "Loading users…",
     "empty": "No users yet.",
     "noMatches": "No users match your search.",
@@ -149,7 +155,8 @@
       "email": "Email",
       "role": "Role",
       "status": "Status",
-      "actions": "Actions"
+      "actions": "Actions",
+      "face": "Face"
     },
     "status": {
       "active": "Active",
@@ -166,6 +173,17 @@
       "submit": "Add",
       "saving": "Saving…",
       "success": "{{name}} was added."
+    },
+    "count_one": "{{count}} user",
+    "count_other": "{{count}} users",
+    "filter": {
+      "all": "All",
+      "active": "Active",
+      "inactive": "Inactive"
+    },
+    "face": {
+      "enrolled": "Enrolled",
+      "missing": "Not enrolled"
     }
   },
   "qr": {
@@ -200,7 +218,8 @@
       "result": "Result",
       "direction": "Door",
       "distance": "Distance",
-      "reason": "Reason"
+      "reason": "Reason",
+      "location": "Place"
     },
     "reason": {
       "liveness_failed": "No head turn (a photo?)",
@@ -219,6 +238,55 @@
     "result": {
       "granted": "Granted",
       "denied": "Denied"
-    }
+    },
+    "allMethods": "All methods",
+    "allResults": "All results",
+    "clearFilters": "Clear filters",
+    "exportCsv": "Export CSV"
+  },
+  "dashboard": {
+    "granted": "Granted today",
+    "denied": "Denied today",
+    "successRate": "Success rate today",
+    "successNote": "{{granted}} of {{total}} attempts",
+    "noAttempts": "No attempts today",
+    "activeUsers": "Active users",
+    "withFace": "{{count}} with an enrolled face",
+    "hourlyTitle": "Activity by hour",
+    "hourlySubtitle": "Today’s attempts at the access point",
+    "hourBar": "{{hour}}:00: {{count}} attempts",
+    "recentTitle": "Latest attempts",
+    "recentSubtitle": "The most recent ones today",
+    "recentEmpty": "No attempts yet today.",
+    "viewHistory": "View history"
+  },
+  "issueQr": {
+    "title": "Issue a temporary QR",
+    "subtitle": "Choose the person. The code lasts one minute, renews itself and works only once.",
+    "user": "User",
+    "choose": "Choose a user",
+    "submit": "Create QR code"
+  },
+  "pagination": {
+    "label": "Pages",
+    "showing": "Showing {{from}}–{{to}} of {{total}}",
+    "previous": "Previous",
+    "next": "Next",
+    "page": "Page {{page}} of {{pages}}"
+  },
+  "locations": {
+    "main_entrance": "Main entrance",
+    "library": "Library",
+    "physics_lab": "Physics lab",
+    "computer_lab": "Computer lab",
+    "chemistry_lab": "Chemistry lab",
+    "auditorium": "Auditorium"
+  },
+  "terminals": {
+    "title": "Access points",
+    "subtitle": "Connected if it talked to the server in the last 90 seconds. Updated every 30 s.",
+    "empty": "No access points yet. They appear on their own when a kiosk is set up.",
+    "online": "Connected",
+    "offline": "Offline"
   }
 }

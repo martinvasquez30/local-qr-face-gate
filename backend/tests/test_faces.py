@@ -146,6 +146,22 @@ def test_deleting_the_face(client, db, admin_headers, member):
     assert face_status(client, admin_headers, member.id).json()["enrolled"] is False
 
 
+def test_the_users_list_says_who_has_a_face(client, admin_headers, member):
+    def member_in_list():
+        users = client.get("/users", headers=admin_headers).json()
+        return next(user for user in users if user["id"] == member.id)
+
+    assert member_in_list()["has_face"] is False
+
+    enroll(client, admin_headers, member.id, [descriptor(0.1)])
+    listed = member_in_list()
+    assert listed["has_face"] is True
+    assert "descriptor" not in listed  # Only yes/no, never the numbers.
+
+    client.delete(f"/users/{member.id}/face", headers=admin_headers)
+    assert member_in_list()["has_face"] is False
+
+
 def test_deactivating_a_user_deletes_their_face(client, db, admin_headers, member):
     enroll(client, admin_headers, member.id, [descriptor(0.1)])
 

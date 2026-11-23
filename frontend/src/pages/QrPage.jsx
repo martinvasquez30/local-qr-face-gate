@@ -24,7 +24,11 @@ function QrPage() {
   const issueQr = useCallback(async () => {
     try {
       const data = await createQr(token, userId);
-      setQr({ value: data.token, expiresAt: Date.now() + data.expires_in * 1000 });
+      setQr({
+        value: data.token,
+        expiresAt: Date.now() + data.expires_in * 1000,
+        duration: data.expires_in,
+      });
       setSecondsLeft(data.expires_in);
       setErrorCode(null);
     } catch (error) {
@@ -75,6 +79,14 @@ function QrPage() {
           <p className="qr__timer" role="status">
             {t("qr.expiresIn", { seconds: secondsLeft })}
           </p>
+          {/* The same time as a bar that empties. The text above already
+              says it, so screen readers skip the bar. */}
+          <progress
+            className="qr__progress"
+            max={qr.duration}
+            value={secondsLeft}
+            aria-hidden="true"
+          />
           <p className="notice">{t("qr.help")}</p>
           <button className="button button--secondary" type="button" onClick={issueQr}>
             {t("qr.renew")}

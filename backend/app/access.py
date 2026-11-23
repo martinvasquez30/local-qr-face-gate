@@ -29,8 +29,9 @@ from app.models import (
     User,
 )
 from app.qr import is_personal_qr, read_personal_qr, read_qr_token
-from app.schemas import AccessDecision, FaceAccessRequest, QrAccessRequest
+from app.schemas import AccessDecision, FaceAccessRequest, HeartbeatRequest, QrAccessRequest
 from app.security import InvalidTokenError
+from app.terminals import touch_terminal
 
 
 def require_terminal(x_terminal_key: Annotated[str | None, Header()] = None) -> None:
@@ -83,6 +84,7 @@ def record_access(
     direction: str,
     user: User | None,
     granted: bool,
+    location: str | None = None,
     distance: float | None = None,
     reason: str | None = None,
 ) -> AccessDecision:
@@ -100,8 +102,12 @@ def record_access(
             direction=direction,
             distance=distance,
             reason=reason,
+            location=location,
         )
     )
+    # A check is also a sign of life: the terminal shows as connected.
+    if location is not None:
+        touch_terminal(db, location, direction)
     db.commit()
     return AccessDecision(
         result=result,
@@ -139,6 +145,7 @@ def check_face(body: FaceAccessRequest, db: DbSession) -> AccessDecision:
         db,
         method=METHOD_FACE,
         direction=body.direction,
+        location=body.location,
         user=user,
         granted=granted,
         distance=distance,
@@ -156,7 +163,13 @@ def check_qr(body: QrAccessRequest, db: DbSession) -> AccessDecision:
 
     def deny(reason: str, user: User | None = None) -> AccessDecision:
         return record_access(
-            db, method=METHOD_QR, direction=body.direction, user=user, granted=False, reason=reason
+            db,
+            method=METHOD_QR,
+            direction=body.direction,
+            location=body.location,
+            user=user,
+            granted=False,
+            reason=reason,
         )
 
     try:
@@ -186,4 +199,19 @@ def check_qr(body: QrAccessRequest, db: DbSession) -> AccessDecision:
         db.rollback()
         return deny("qr_already_used", user)
 
-    return record_access(db, method=METHOD_QR, direction=body.direction, user=user, granted=True)
+    return record_access(
+        db,
+        method=METHOD_QR,
+        direction=body.direction,
+        location=body.location,
+        user=user,
+        granted=True,
+    )
+
+
+@router.post("/heartbeat", status_code=204)
+def heartbeat(body: HeartbeatRequest, db: DbSession) -> None:
+    """The kiosk says "I am here" every 30 s, so the admin home can show it as
+    connected even when nobody passes. Same terminal key as the checks."""
+    touch_terminal(db, body.location, body.direction)
+    db.commit()
