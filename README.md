@@ -42,7 +42,7 @@ known limitations and commits.
 | 1 | Oct 5–11 | Project scaffold: FastAPI health check, React + Vite frontend, README and architecture notes | Initial commit (`3618985`) |
 | 2 | Oct 12–18 | Temporary email/password login, Spanish/English language switcher | [`week-02.md`](docs/progress/week-02.md) |
 | 3 | Oct 19–25 | SQLite database, admin-only users API, users management page with routing | [`week-03.md`](docs/progress/week-03.md) |
-| 4 | Oct 26–Nov 1 | No commits this week | — |
+| 4 | Oct 26–Nov 1 | Planning week: no code changes | — |
 | 5 | Nov 2–8 | Simpler architecture (one local server), access log table and filtered list API | [`week-05.md`](docs/progress/week-05.md) |
 | 6 | Nov 9–15 | SSO with Google, face model and enrollment, kiosk with face and QR, single-use QR codes, history page; tested offline | [`week-06.md`](docs/progress/week-06.md) |
 | 7 | Nov 16–22 | Duplicate faces rejected, reason for every denied attempt, head-turn liveness check, online demo deployment, personal QR codes, new visual design with Bootstrap (in progress) | [`week-07.md`](docs/progress/week-07.md) |
