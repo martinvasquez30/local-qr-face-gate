@@ -6,7 +6,8 @@ import ErrorMessage from "../components/ErrorMessage.jsx";
 import { FACE_RECOGNITION_ENABLED } from "../config.js";
 import { getDescriptor, getHeadTurn, loadFaceModels } from "../face/faceModel.js";
 import { hasTurned, isBackToFront, startingTurn } from "../face/headTurn.js";
-import { checkFace, checkQr } from "../kiosk/kioskApi.js";
+import { checkFace, checkQr, sendHeartbeat } from "../kiosk/kioskApi.js";
+import { LOCATIONS } from "../kiosk/locations.js";
 import { readQrFromVideo } from "../kiosk/qrScanner.js";
 
 const SETTINGS_KEY = "kioskSettings";
@@ -20,12 +21,16 @@ const FRONT_TIMEOUT_MS = 3000; // Time to look straight at the camera again.
 // Short pause between head measures. Without it the measures run back to back,
 // the browser never gets time to draw, and the instructions never appear.
 const LIVENESS_PAUSE_MS = 30;
+// How often the kiosk tells the server it is still there (see sendHeartbeat).
+const HEARTBEAT_EVERY_MS = 30000;
 
-// The kiosk settings (terminal key and entry/exit) stay in this browser, so
-// the kiosk is set up only once. Storage access can fail (privacy mode).
+// The kiosk settings (terminal key, place and entry/exit) stay in this
+// browser, so the kiosk is set up only once. Storage access can fail (privacy mode).
 function readSettings() {
   try {
-    return JSON.parse(localStorage.getItem(SETTINGS_KEY));
+    const settings = JSON.parse(localStorage.getItem(SETTINGS_KEY));
+    // Saved before kiosks had a place: set it up again to choose one.
+    return settings?.location ? settings : null;
   } catch {
     return null;
   }
@@ -138,15 +143,17 @@ function KioskPage() {
   );
 }
 
-/** One-time setup: terminal key and direction. */
+/** One-time setup: terminal key, place and direction. */
 function KioskSetup({ errorCode, onSaved }) {
   const { t } = useTranslation();
   const [terminalKey, setTerminalKey] = useState("");
+  const [location, setLocation] = useState("");
   const [direction, setDirection] = useState("in");
+  const isComplete = terminalKey.trim() !== "" && location !== "";
 
   function handleSubmit(event) {
     event.preventDefault();
-    if (terminalKey.trim()) onSaved({ terminalKey: terminalKey.trim(), direction });
+    if (isComplete) onSaved({ terminalKey: terminalKey.trim(), location, direction });
   }
 
   return (
@@ -165,6 +172,21 @@ function KioskSetup({ errorCode, onSaved }) {
           />
         </label>
         <label className="field">
+          <span className="field__label">{t("kiosk.setup.location")}</span>
+          <select
+            className="field__input"
+            value={location}
+            onChange={(event) => setLocation(event.target.value)}
+          >
+            <option value="">{t("kiosk.setup.chooseLocation")}</option>
+            {LOCATIONS.map((code) => (
+              <option key={code} value={code}>
+                {t(`locations.${code}`)}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="field">
           <span className="field__label">{t("kiosk.setup.direction")}</span>
           <select
             className="field__input"
@@ -176,7 +198,7 @@ function KioskSetup({ errorCode, onSaved }) {
           </select>
         </label>
         <ErrorMessage code={errorCode} />
-        <button className="button button--primary" type="submit" disabled={!terminalKey.trim()}>
+        <button className="button button--primary" type="submit" disabled={!isComplete}>
           {t("kiosk.setup.save")}
         </button>
       </form>
@@ -202,6 +224,20 @@ function KioskScreen({ settings, onInvalidKey, onReconfigure }) {
   // What the screen says: idle, turn, front, showQr, multiple, granted, denied or error.
   const [message, setMessage] = useState({ kind: "idle" });
   const [failures, setFailures] = useState(0);
+
+  // Heartbeat: now and every 30 s, so the admin home shows this kiosk as
+  // connected even when nobody passes. Network errors are ignored (the next
+  // one tries again); a wrong key goes back to the setup screen.
+  useEffect(() => {
+    function beat() {
+      sendHeartbeat(settings).catch((error) => {
+        if (errorCodeOf(error) === "invalid_terminal_key") onInvalidKey();
+      });
+    }
+    beat();
+    const timer = setInterval(beat, HEARTBEAT_EVERY_MS);
+    return () => clearInterval(timer);
+  }, [settings, onInvalidKey]);
 
   useEffect(() => {
     if (!FACE_RECOGNITION_ENABLED) return;
@@ -253,12 +289,7 @@ function KioskScreen({ settings, onInvalidKey, onReconfigure }) {
           }
 
           // 4. The server decides, and logs the attempt (also a failed turn).
-          const decision = await checkFace(
-            settings.terminalKey,
-            capture.descriptor,
-            settings.direction,
-            livenessPassed,
-          );
+          const decision = await checkFace(settings, capture.descriptor, livenessPassed);
           if (stopped) return;
           const granted = decision.result === "granted";
           setMessage({
@@ -312,7 +343,7 @@ function KioskScreen({ settings, onInvalidKey, onReconfigure }) {
         if (!token) continue;
 
         try {
-          const decision = await checkQr(settings.terminalKey, token, settings.direction);
+          const decision = await checkQr(settings, token);
           if (stopped) return;
           setMessage({ kind: decision.result, name: decision.user_name, reason: decision.reason });
           if (decision.result === "granted") setFailures(0);
@@ -362,7 +393,7 @@ function KioskScreen({ settings, onInvalidKey, onReconfigure }) {
   return (
     <section className="card kiosk">
       <h1 className="title">
-        {t("kiosk.title")} · {t(`kiosk.direction.${settings.direction}`)}
+        {t(`locations.${settings.location}`)} · {t(`kiosk.direction.${settings.direction}`)}
       </h1>
 
       <Camera videoRef={videoRef} />

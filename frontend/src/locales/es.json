@@ -12,7 +12,12 @@
     "users": "Usuarios",
     "kiosk": "Punto de acceso",
     "history": "Historial",
-    "myQr": "Mi QR"
+    "myQr": "Mi QR",
+    "kioskShort": "Kiosco",
+    "logout": "Cerrar sesión",
+    "privacyTitle": "Privacidad protegida",
+    "privacyText": "Solo se guardan descriptores faciales, nunca fotos.",
+    "issueQr": "Emitir QR"
   },
   "login": {
     "title": "Iniciar sesión",
@@ -29,8 +34,9 @@
     "welcome": "Hola, {{name}}",
     "signedInAs": "Sesión iniciada como {{email}} · {{role}}",
     "description": "Sistema de control de acceso con reconocimiento facial y códigos QR dinámicos.",
-    "logout": "Cerrar sesión",
-    "onlineDemo": "Demo en línea: el reconocimiento facial solo funciona en la instalación local, porque los datos biométricos no se envían a la nube. Usuarios, códigos QR, historial, SSO e idiomas sí funcionan aquí."
+    "onlineDemo": "Demo en línea: el reconocimiento facial solo funciona en la instalación local, porque los datos biométricos no se envían a la nube. Usuarios, códigos QR, historial, SSO e idiomas sí funcionan aquí.",
+    "issueQr": "Emitir QR temporal",
+    "myQr": "Ver mi QR"
   },
   "roles": {
     "admin": "Administrador",
@@ -77,7 +83,6 @@
     "secure_context_required": "Este navegador no puede generar códigos QR en esta página: debe abrirse con https (o en localhost)."
   },
   "kiosk": {
-    "title": "Punto de acceso",
     "idle": "Mira a la cámara",
     "multiple": "Solo una persona a la vez",
     "turn": {
@@ -98,7 +103,9 @@
       "subtitle": "Se hace una sola vez en este navegador. Funciona sin iniciar sesión y sin internet.",
       "key": "Clave de terminal",
       "direction": "Tipo de puerta",
-      "save": "Guardar"
+      "save": "Guardar",
+      "location": "Lugar",
+      "chooseLocation": "Elige dónde está este punto de acceso"
     },
     "useQr": "Usar código QR",
     "backToFace": "Volver al reconocimiento facial",
@@ -139,7 +146,6 @@
     "title": "Usuarios",
     "subtitle": "Personas registradas en el sistema. Los usuarios se desactivan, nunca se eliminan.",
     "search": "Buscar por nombre o correo",
-    "showInactive": "Mostrar usuarios inactivos",
     "loading": "Cargando usuarios…",
     "empty": "Aún no hay usuarios.",
     "noMatches": "Ningún usuario coincide con la búsqueda.",
@@ -149,7 +155,8 @@
       "email": "Correo electrónico",
       "role": "Rol",
       "status": "Estado",
-      "actions": "Acciones"
+      "actions": "Acciones",
+      "face": "Rostro"
     },
     "status": {
       "active": "Activo",
@@ -166,6 +173,17 @@
       "submit": "Agregar",
       "saving": "Guardando…",
       "success": "Se agregó a {{name}}."
+    },
+    "count_one": "{{count}} usuario",
+    "count_other": "{{count}} usuarios",
+    "filter": {
+      "all": "Todos",
+      "active": "Activos",
+      "inactive": "Inactivos"
+    },
+    "face": {
+      "enrolled": "Registrado",
+      "missing": "Sin registrar"
     }
   },
   "qr": {
@@ -200,7 +218,8 @@
       "result": "Resultado",
       "direction": "Puerta",
       "distance": "Distancia",
-      "reason": "Motivo"
+      "reason": "Motivo",
+      "location": "Lugar"
     },
     "reason": {
       "liveness_failed": "Sin giro de cabeza (¿una foto?)",
@@ -219,6 +238,55 @@
     "result": {
       "granted": "Aceptado",
       "denied": "Rechazado"
-    }
+    },
+    "allMethods": "Todos los métodos",
+    "allResults": "Todos los resultados",
+    "clearFilters": "Limpiar filtros",
+    "exportCsv": "Exportar CSV"
+  },
+  "dashboard": {
+    "granted": "Accesos aceptados hoy",
+    "denied": "Intentos rechazados hoy",
+    "successRate": "Tasa de éxito hoy",
+    "successNote": "{{granted}} de {{total}} intentos",
+    "noAttempts": "Sin intentos hoy",
+    "activeUsers": "Usuarios activos",
+    "withFace": "{{count}} con rostro registrado",
+    "hourlyTitle": "Actividad por hora",
+    "hourlySubtitle": "Intentos de hoy en el punto de acceso",
+    "hourBar": "{{hour}}:00 h: {{count}} intentos",
+    "recentTitle": "Últimos intentos",
+    "recentSubtitle": "Los más recientes de hoy",
+    "recentEmpty": "Todavía no hay intentos hoy.",
+    "viewHistory": "Ver historial"
+  },
+  "issueQr": {
+    "title": "Emitir QR temporal",
+    "subtitle": "Elige a la persona. El código dura un minuto, se renueva solo y sirve una sola vez.",
+    "user": "Usuario",
+    "choose": "Elige un usuario",
+    "submit": "Generar código QR"
+  },
+  "pagination": {
+    "label": "Páginas",
+    "showing": "Mostrando {{from}}–{{to}} de {{total}}",
+    "previous": "Anterior",
+    "next": "Siguiente",
+    "page": "Página {{page}} de {{pages}}"
+  },
+  "locations": {
+    "main_entrance": "Entrada principal",
+    "library": "Biblioteca",
+    "physics_lab": "Laboratorio de física",
+    "computer_lab": "Laboratorio de informática",
+    "chemistry_lab": "Laboratorio de química",
+    "auditorium": "Auditorio"
+  },
+  "terminals": {
+    "title": "Puntos de acceso",
+    "subtitle": "Conectado si habló con el servidor en los últimos 90 segundos. Se actualiza cada 30 s.",
+    "empty": "Aún no hay puntos de acceso. Aparecen solos al configurar un kiosco.",
+    "online": "Conectado",
+    "offline": "Sin conexión"
   }
 }

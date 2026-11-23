@@ -1,13 +1,14 @@
 import { useTranslation } from "react-i18next";
 import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { useAuth } from "./auth/AuthContext.jsx";
-import LanguageSwitcher from "./components/LanguageSwitcher.jsx";
-import NavBar from "./components/NavBar.jsx";
+import AppShell from "./components/AppShell.jsx";
+import PublicLayout from "./components/PublicLayout.jsx";
 import { FACE_RECOGNITION_ENABLED } from "./config.js";
 import EnrollFacePage from "./pages/EnrollFacePage.jsx";
 import FaceCheckPage from "./pages/FaceCheckPage.jsx";
 import HistoryPage from "./pages/HistoryPage.jsx";
 import HomePage from "./pages/HomePage.jsx";
+import IssueQrPage from "./pages/IssueQrPage.jsx";
 import KioskPage from "./pages/KioskPage.jsx";
 import LoginPage from "./pages/LoginPage.jsx";
 import MyQrPage from "./pages/MyQrPage.jsx";
@@ -25,19 +26,33 @@ function App() {
   // Pick the screen from the session state. While logged out, every URL shows
   // the login form; after logging in, the same URL shows its page. The kiosk
   // is the exception: it uses a terminal key instead of a user login.
-  let content;
+  // Screens without a user (kiosk, loading, login) have no menu.
   if (pathname === "/kiosk") {
-    content = <KioskPage />;
-  } else if (isRestoring) {
-    content = (
-      <p className="loading" role="status">
-        {t("app.loading")}
-      </p>
+    return (
+      <PublicLayout>
+        <KioskPage />
+      </PublicLayout>
     );
-  } else if (!user) {
-    content = <LoginPage />;
-  } else {
-    content = (
+  }
+  if (isRestoring) {
+    return (
+      <PublicLayout>
+        <p className="loading" role="status">
+          {t("app.loading")}
+        </p>
+      </PublicLayout>
+    );
+  }
+  if (!user) {
+    return (
+      <PublicLayout>
+        <LoginPage />
+      </PublicLayout>
+    );
+  }
+
+  return (
+    <AppShell>
       <Routes>
         <Route path="/" element={<HomePage />} />
         {/* Every logged-in user, members too: their own QR code. */}
@@ -48,6 +63,7 @@ function App() {
           element={canUseFaces ? <EnrollFacePage /> : <Navigate to="/" replace />}
         />
         <Route path="/history" element={isAdmin ? <HistoryPage /> : <Navigate to="/" replace />} />
+        <Route path="/qr" element={isAdmin ? <IssueQrPage /> : <Navigate to="/" replace />} />
         <Route
           path="/users/:userId/qr"
           element={isAdmin ? <QrPage /> : <Navigate to="/" replace />}
@@ -59,18 +75,7 @@ function App() {
         {/* Unknown URLs go back to the home page. */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
-    );
-  }
-
-  return (
-    <div className="app">
-      <header className="topbar">
-        <span className="topbar__title">{t("app.title")}</span>
-        <NavBar />
-        <LanguageSwitcher />
-      </header>
-      <main className="page">{content}</main>
-    </div>
+    </AppShell>
   );
 }
 

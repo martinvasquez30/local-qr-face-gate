@@ -1,24 +1,68 @@
+/*
+ * Design tokens: every color, space and shadow of the app is a variable here.
+ * Colors come from the Figma Make prototype; the rules follow Material Design
+ * principles (an 8px spacing grid, elevation with soft shadows, color plus an
+ * icon or text for states). Pages use these variables, never raw values.
+ */
 :root {
   /* Native controls (select, inputs) follow the light/dark theme too. */
   color-scheme: light dark;
-  --color-bg: #f4f6f8;
+  --color-bg: #f5f7fb;
   --color-surface: #ffffff;
-  --color-text: #1b2430;
-  --color-muted: #5b6573;
-  --color-border: #d3d9e0;
-  --color-primary: #2357c6;
-  --color-primary-hover: #1b47a5;
+  --color-text: #172033;
+  --color-muted: #5f6b80;
+  --color-border: #828c9c; /* Form fields: at least 3:1 contrast (WCAG). */
+  --color-line: #e4e9f1; /* Separators and card edges: soft. */
+  --color-primary: #2563eb;
+  --color-primary-hover: #1d4ed8;
   --color-on-primary: #ffffff;
-  --color-error: #b42318;
+  --color-error: #b91c1c;
   --color-error-bg: #fdecea;
   --color-notice-bg: #eef3fb;
   --color-success-bg: #e7f6ec;
-  --color-online: #1f9d55;
-  --color-offline: #d64545;
-  --color-checking: #c48a00;
+  --color-online: #15803d;
+  --color-offline: #b91c1c;
+  --color-checking: #b45309;
+
+  /* Side menu: dark navy in both themes. */
+  --color-sidebar: #12233f;
+  --color-sidebar-active: #233b60;
+  --color-sidebar-text: #c3cddc;
+  --color-sidebar-muted: #95a3b8;
+  --color-sidebar-line: #2a3d59;
+
+  /* 8px grid: every margin and padding is one of these. */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+
   --radius: 12px;
   --radius-small: 8px;
-  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  /* Elevation: the higher a surface is, the bigger its shadow. */
+  --shadow-1: 0 1px 3px rgb(15 23 42 / 0.06);
+  --shadow-2: 0 4px 24px rgb(15 23 42 / 0.08);
+
+  /* System fonts: nothing to download, so they also work offline. */
+  --font-body: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+
+  --sidebar-width: 252px;
+  --topbar-height: 64px;
+  --bottom-nav-height: 64px;
+
+  /* Bootstrap reads its own --bs-* variables: point them to our tokens so its
+     classes and our CSS use the same colors and font. */
+  --bs-body-bg: var(--color-bg);
+  --bs-body-color: var(--color-text);
+  --bs-body-font-family: var(--font-body);
+  --bs-border-color: var(--color-line);
+  --bs-secondary-color: var(--color-muted);
+  --bs-link-color-rgb: 37, 99, 235;
+  --bs-link-hover-color-rgb: 29, 78, 216;
+
+  font-family: var(--font-body);
   color: var(--color-text);
   background: var(--color-bg);
 }
@@ -29,7 +73,8 @@
     --color-surface: #1c222b;
     --color-text: #e8ecf1;
     --color-muted: #9aa4b2;
-    --color-border: #343d4a;
+    --color-border: #6b7684;
+    --color-line: #2c343f;
     --color-primary: #6d9cf5;
     --color-primary-hover: #8db2f7;
     --color-on-primary: #0d1420;
@@ -37,87 +82,337 @@
     --color-error-bg: #3a1d1b;
     --color-notice-bg: #1f2a3a;
     --color-success-bg: #16301f;
+    --color-online: #4ade80;
+    --color-offline: #f97066;
+    --color-checking: #fbbf24;
+    --color-sidebar: #0d1726;
+    --color-sidebar-active: #1e3354;
+    --shadow-1: 0 1px 3px rgb(0 0 0 / 0.3);
+    --shadow-2: 0 4px 24px rgb(0 0 0 / 0.35);
+    --bs-link-color-rgb: 109, 156, 245;
+    --bs-link-hover-color-rgb: 141, 178, 247;
   }
 }
 
-* {
-  box-sizing: border-box;
-}
-
 body {
-  margin: 0;
   min-height: 100vh;
   background: var(--color-bg);
 }
 
-/* --- Layout --- */
+h1,
+h2,
+h3 {
+  font-weight: 700;
+  letter-spacing: -0.2px;
+}
 
-.app {
+/* --- App frame: side menu, top bar and bottom menu --- */
+
+/* Mobile first: the base rules are for phones. From 992px (Bootstrap "lg")
+   the side menu appears and the bottom menu goes away. */
+.app-shell__main {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  /* Room so the fixed bottom menu does not cover the end of the page. */
+  padding-bottom: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom));
+}
+
+@media (min-width: 992px) {
+  .app-shell__main {
+    margin-left: var(--sidebar-width);
+    padding-bottom: 0;
+  }
+}
+
+.app-public {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
 }
 
-.topbar {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px 16px;
-  padding: 10px 16px;
+.app-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  min-height: var(--topbar-height);
+  padding: var(--space-2) var(--space-4);
   background: var(--color-surface);
-  border-bottom: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-line);
 }
 
-.topbar__title {
-  flex: 1;
+@media (min-width: 992px) {
+  .app-topbar {
+    padding: var(--space-2) var(--space-6);
+  }
+}
+
+.app-topbar__title {
   min-width: 0;
-  font-weight: 600;
+  font-size: 1.125rem;
+  font-weight: 700;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-/* On phones the links go to a second row, under the title and language. */
-.topbar__nav {
-  order: 3;
-  width: 100%;
+/* Logo and app name. */
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 0;
+  color: var(--color-text);
+  font-size: 1.125rem;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.brand:hover {
+  color: inherit;
+}
+
+.brand__name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.brand--on-dark {
+  color: #ffffff;
+  padding: 0 var(--space-2);
+}
+
+/* In the side menu a long name goes to a second line instead of being cut. */
+.brand--on-dark .brand__name {
+  white-space: normal;
+  line-height: 1.2;
+}
+
+.brand__mark {
+  flex-shrink: 0;
+  display: inline-grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  color: #ffffff;
+  background: #2563eb;
+  box-shadow: 0 4px 12px rgb(37 99 235 / 0.3);
+}
+
+/* Side menu (large screens). Bootstrap's d-none / d-lg-flex show or hide it. */
+.app-sidebar {
+  position: fixed;
+  inset: 0 auto 0 0;
+  z-index: 20;
+  width: var(--sidebar-width);
+  padding: var(--space-5) var(--space-4) var(--space-4);
+  color: #ffffff;
+  background: var(--color-sidebar);
+}
+
+.app-sidebar__nav {
   display: flex;
-  /* Links that do not fit go to another row instead of being cut off. */
-  flex-wrap: wrap;
-  gap: 4px;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin-top: var(--space-6);
 }
 
-@media (min-width: 640px) {
-  .topbar__nav {
-    order: 0;
-    width: auto;
-  }
-}
-
-.nav-link {
-  padding: 6px 12px;
+.app-sidebar__link {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: 44px;
+  padding: var(--space-2) var(--space-3);
   border-radius: var(--radius-small);
-  color: var(--color-muted);
+  color: var(--color-sidebar-text);
   font-weight: 500;
   text-decoration: none;
-  /* "Punto de acceso" stays on one line. */
-  white-space: nowrap;
 }
 
-.nav-link:hover {
+.app-sidebar__link:hover {
+  color: #ffffff;
+  background: rgb(255 255 255 / 0.06);
+}
+
+/* Current page: background, white and bold, not only a color change. */
+.app-sidebar__link.active {
+  color: #ffffff;
+  font-weight: 700;
+  background: var(--color-sidebar-active);
+  box-shadow: inset 3px 0 0 #60a5fa;
+}
+
+.app-sidebar__privacy {
+  display: flex;
+  gap: var(--space-3);
+  margin-top: auto;
+  padding: var(--space-3);
+  border: 1px solid var(--color-sidebar-line);
+  border-radius: 10px;
+  color: #8fb9ff;
+}
+
+.app-sidebar__privacy svg {
+  flex-shrink: 0;
+}
+
+.app-sidebar__privacy p,
+.app-sidebar__profile p {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  margin: 0;
+  font-size: 0.75rem;
+  line-height: 1.4;
+}
+
+.app-sidebar__privacy strong,
+.app-sidebar__profile strong {
+  color: #ffffff;
+}
+
+.app-sidebar__privacy span,
+.app-sidebar__profile span {
+  color: var(--color-sidebar-muted);
+}
+
+.app-sidebar__profile {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-sidebar-line);
+}
+
+.app-sidebar__profile p {
+  flex: 1;
+}
+
+.app-sidebar__profile strong {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.app-sidebar .icon-button {
+  color: var(--color-sidebar-muted);
+}
+
+.app-sidebar .icon-button:hover {
+  color: #ffffff;
+  background: rgb(255 255 255 / 0.08);
+}
+
+/* Initials in a rounded square, instead of a photo. */
+.avatar {
+  flex-shrink: 0;
+  display: inline-grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-small);
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: #1e40af;
+  background: #dbeafe;
+}
+
+/* Bottom menu (phones and tablets). Bootstrap's d-lg-none hides it on large screens. */
+.app-bottom-nav {
+  position: fixed;
+  inset: auto 0 0;
+  z-index: 30;
+  display: grid;
+  /* One equal column per menu entry, however many there are. */
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  height: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom));
+  padding: var(--space-1) var(--space-1) env(safe-area-inset-bottom);
+  background: var(--color-surface);
+  border-top: 1px solid var(--color-line);
+  box-shadow: 0 -2px 12px rgb(15 23 42 / 0.06);
+}
+
+.app-bottom-nav__link {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-width: 0;
+  border-radius: var(--radius-small);
+  color: var(--color-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.app-bottom-nav__link span:last-child {
+  max-width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.app-bottom-nav__icon {
+  display: grid;
+  place-items: center;
+  width: 56px;
+  max-width: 100%;
+  height: 30px;
+  border-radius: 999px;
+}
+
+/* Current page: a pill behind the icon (Material navigation bar) and bold text. */
+.app-bottom-nav__link.active {
+  color: var(--color-primary);
+  font-weight: 800;
+}
+
+.app-bottom-nav__link.active .app-bottom-nav__icon {
+  background: var(--color-notice-bg);
+}
+
+/* Square button with only an icon (it always has an aria-label). */
+.icon-button {
+  flex-shrink: 0;
+  display: inline-grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-small);
+  color: var(--color-muted);
+  background: transparent;
+  cursor: pointer;
+}
+
+.icon-button:hover {
   color: var(--color-text);
   background: var(--color-bg);
 }
 
-/* NavLink adds the "active" class to the link of the current page. */
-.nav-link.active {
-  color: var(--color-primary);
-  background: var(--color-notice-bg);
+.icon-button--outlined {
+  border: 1px solid var(--color-border);
 }
 
-.nav-link:focus-visible {
+.app-sidebar__link:focus-visible,
+.app-bottom-nav__link:focus-visible,
+.icon-button:focus-visible,
+.brand:focus-visible {
   outline: 2px solid var(--color-primary);
   outline-offset: 2px;
+}
+
+.app-sidebar .app-sidebar__link:focus-visible,
+.app-sidebar .icon-button:focus-visible,
+.brand--on-dark:focus-visible {
+  outline-color: #93c5fd;
 }
 
 .page {
@@ -127,7 +422,11 @@ body {
   padding: 16px;
 }
 
+/* Bootstrap also has a .card class: these rules keep ours as it was
+   (block, no border) until each page is redesigned. */
 .card {
+  display: block;
+  border: 0;
   width: 100%;
   max-width: 480px;
   padding: clamp(20px, 5vw, 40px);
@@ -370,6 +669,14 @@ a.button {
   font-weight: 600;
 }
 
+/* Time left as a bar that empties. accent-color paints it with our blue. */
+.qr__progress {
+  width: 100%;
+  max-width: 320px;
+  height: 8px;
+  accent-color: var(--color-primary);
+}
+
 /* "My QR": whether the device is online. Offline is not an error here: the
    codes keep being made in the browser. */
 .connection {
@@ -442,27 +749,219 @@ a.button {
   border-top: 1px solid var(--color-border);
 }
 
-/* --- Home --- */
+/* --- Shared page parts --- */
 
-.home__account {
-  margin: 0 0 24px;
-  overflow-wrap: anywhere;
+/* Pages wider than a card (home): full width up to a comfortable limit. */
+.page-wide {
+  width: 100%;
+  max-width: 1200px;
+  align-self: start;
 }
 
-.home__actions {
-  margin-top: 24px;
+/* Title on the left, main action on the right (below it on phones). */
+.page-intro {
   display: flex;
-  justify-content: flex-end;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3) var(--space-4);
+  margin-bottom: var(--space-4);
 }
 
-/* --- Backend status --- */
+.page-intro .title {
+  margin-bottom: var(--space-1);
+}
 
-.status {
+.page-intro .subtitle {
+  margin-bottom: 0;
+}
+
+/* A white surface with a soft edge and a small shadow (elevation 1). */
+.panel {
+  background: var(--color-surface);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-1);
+}
+
+.panel--padded {
+  padding: var(--space-5);
+}
+
+.panel__subtitle {
+  margin: var(--space-1) 0 var(--space-4);
+  color: var(--color-muted);
+  font-size: 0.875rem;
+}
+
+/* Button with an icon before the text. */
+.button--icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+}
+
+/* --- Home: summary numbers and chart --- */
+
+.metric-card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  height: 100%;
+  padding: var(--space-4) var(--space-5);
+}
+
+.metric-card p {
+  margin: 0;
+}
+
+.metric-card__icon {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius);
+}
+
+.metric-card__icon--blue {
+  color: #1d4ed8;
+  background: #dbeafe;
+}
+
+.metric-card__icon--green {
+  color: #15803d;
+  background: #dcfce7;
+}
+
+.metric-card__icon--red {
+  color: #b91c1c;
+  background: #fee2e2;
+}
+
+.metric-card__icon--amber {
+  color: #b45309;
+  background: #fef3c7;
+}
+
+.metric-card__label {
+  color: var(--color-muted);
+  font-size: 0.875rem;
+}
+
+.metric-card__value {
+  font-size: 1.75rem;
+  font-weight: 800;
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+}
+
+.metric-card__note {
+  color: var(--color-muted);
+  font-size: 0.75rem;
+}
+
+/* 24 columns, one per hour. Each bar grows from the bottom. */
+.hour-chart {
+  display: grid;
+  grid-template-columns: repeat(24, 1fr);
+  gap: 2px;
+  height: 160px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.hour-chart__item {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  min-width: 0;
+}
+
+.hour-chart__bar {
+  display: block;
+  border-radius: 4px 4px 0 0;
+  background: var(--color-primary);
+}
+
+.hour-chart__label {
+  height: 20px;
+  padding-top: var(--space-1);
+  color: var(--color-muted);
+  font-size: 0.6875rem;
+  text-align: center;
+}
+
+/* --- Home: access points --- */
+
+.terminal-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Icon, name, status and time in one row; on phones the time wraps below. */
+.terminal-row {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 8px;
-  font-weight: 500;
+  gap: var(--space-2) var(--space-3);
+  padding: var(--space-3) 0;
+  border-top: 1px solid var(--color-line);
+}
+
+.terminal-row__icon {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-small);
+}
+
+.terminal-row__icon--online {
+  color: #15803d;
+  background: #dcfce7;
+}
+
+.terminal-row__icon--offline {
+  color: #b91c1c;
+  background: #fee2e2;
+}
+
+.terminal-row__name {
+  flex: 1 1 140px;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  margin: 0;
+}
+
+.terminal-row__name span,
+.terminal-row__seen {
+  color: var(--color-muted);
+  font-size: 0.8125rem;
+}
+
+/* The status pill inside a card: always with its text (not only the dot). */
+.terminal-row .status {
+  padding: var(--space-1) var(--space-3);
+}
+
+/* --- Server status (top bar) --- */
+
+.status {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-3);
+  border: 1px solid var(--color-line);
+  border-radius: 999px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  white-space: nowrap;
 }
 
 .status__dot {
@@ -484,10 +983,62 @@ a.button {
   color: var(--color-checking);
 }
 
-.status__version {
-  margin-left: auto;
+/* Phones: only the dot. The text is hidden on screen but still read aloud. */
+@media (max-width: 575px) {
+  .status {
+    padding: var(--space-2);
+  }
+
+  .status__text {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+}
+
+/* --- Filter tabs and pagination --- */
+
+.filter-tabs {
+  display: inline-flex;
+  padding: var(--space-1);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-small);
+  background: var(--color-bg);
+}
+
+.filter-tabs__button {
+  min-height: 36px;
+  padding: var(--space-1) var(--space-3);
+  border: 0;
+  border-radius: 6px;
   color: var(--color-muted);
-  font-weight: 400;
+  background: transparent;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* The chosen tab: raised white surface and dark text, not only a color. */
+.filter-tabs__button[aria-pressed="true"] {
+  color: var(--color-text);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-1);
+}
+
+.filter-tabs__button:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 1px;
+}
+
+.pagination-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  color: var(--color-muted);
   font-size: 0.875rem;
 }
 
@@ -599,18 +1150,6 @@ a.button {
 
 /* --- History page --- */
 
-.history-filters {
-  display: grid;
-  gap: 12px 16px;
-  margin-bottom: 16px;
-}
-
-@media (min-width: 640px) {
-  .history-filters {
-    grid-template-columns: 1fr 1fr 2fr;
-  }
-}
-
 .history-summary {
   margin: 0 0 8px;
   color: var(--color-muted);
@@ -720,15 +1259,4 @@ a.button {
 
 /* --- Accessibility --- */
 
-/* Hidden on screen but still read by screen readers. */
-.visually-hidden {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  margin: -1px;
-  padding: 0;
-  overflow: hidden;
-  clip: rect(0 0 0 0);
-  white-space: nowrap;
-  border: 0;
-}
+/* .visually-hidden (hidden on screen, read by screen readers) comes from Bootstrap. */

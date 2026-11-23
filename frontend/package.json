@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@vladmandic/face-api": "1.7.15",
+    "bootstrap": "^5.3.9",
     "i18next": "^26.5.2",
     "jsqr": "1.4.0",
     "qrcode.react": "4.2.0",
