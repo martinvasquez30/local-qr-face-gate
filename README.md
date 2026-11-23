@@ -45,7 +45,7 @@ known limitations and commits.
 | 4 | Oct 26–Nov 1 | No commits this week | — |
 | 5 | Nov 2–8 | Simpler architecture (one local server), access log table and filtered list API | [`week-05.md`](docs/progress/week-05.md) |
 | 6 | Nov 9–15 | SSO with Google, face model and enrollment, kiosk with face and QR, single-use QR codes, history page; tested offline | [`week-06.md`](docs/progress/week-06.md) |
-| 7 | Nov 16–22 | Duplicate faces rejected, reason for every denied attempt, head-turn liveness check, online demo deployment (in progress) | [`week-07.md`](docs/progress/week-07.md) |
+| 7 | Nov 16–22 | Duplicate faces rejected, reason for every denied attempt, head-turn liveness check, online demo deployment, personal QR codes, new visual design with Bootstrap (in progress) | [`week-07.md`](docs/progress/week-07.md) |
 
 ## Architecture at a glance
 
@@ -312,6 +312,9 @@ has been reviewed and studied by the author.
 | 2026-11-17 | Claude Code (Anthropic) | Liveness check: a blink check was built and dropped after real tests (the landmark model barely moves the eyelids); replaced by a random head-turn challenge (`headTurn.js`), `liveness_passed` field and `liveness_failed` reason (pytest tests), network warm-up at load, live head-turn test on the camera check page |
 | 2026-11-18 | Claude Code (Anthropic) | Summary of the course rubric against the project; weekly progress table in the README and week 7 notes; online demo: `FACE_RECOGNITION_ENABLED` switch (backend and frontend, QR-only kiosk), SSO-only first admin (`INITIAL_ADMIN_EMAIL`), PostgreSQL URLs with psycopg, `render.yaml` and `vercel.json`, deployment docs (with pytest tests) |
 | 2026-11-18 | Claude Code (Anthropic) | Options to make QR codes without internet; personal QR codes signed in the browser with a key per user (TOTP-style, Web Crypto), `POST /me/qr-key`, check in `POST /access/qr`, SSO sign-in for members, "My QR" page (with pytest tests) |
+| 2026-11-21 | Claude Code (Anthropic) | Review of a Figma Make prototype against the course stack; new visual design part 1: Bootstrap 5, design tokens (colors, spacing, elevation), app frame with side menu, top bar and bottom menu, SVG icons adapted from the prototype |
+| 2026-11-21 | Claude Code (Anthropic) | Prototype features part 2: admin dashboard (today's numbers, attempts per hour, latest attempts), "Issue QR" page, user status tabs and face column (`has_face`, with a pytest test), history method/result filters, pagination and CSV export, server status in the top bar, QR countdown bar |
+| 2026-11-22 | Claude Code (Anthropic) | Access point places: place chosen in the kiosk setup, `terminals` table, heartbeat endpoint and admin `GET /terminals` (9 pytest tests), place column in events, "Access points" card on the admin home |
 
 ### Third-party libraries
 
@@ -334,6 +337,7 @@ has been reviewed and studied by the author.
 | [@vladmandic/face-api](https://github.com/vladmandic/face-api) 1.7.15 | Face detection and 128-number face descriptors in the browser (includes TensorFlow.js and the pre-trained weights: SSD MobileNet v1, 68-point landmarks, face recognition net). Repository archived since 2024; the version is pinned. | MIT |
 | [qrcode.react](https://github.com/zpao/qrcode.react) 4.2.0 | Draws the QR code on the admin's QR page | ISC |
 | [jsQR](https://github.com/cozmo/jsQR) 1.4.0 | Reads QR codes from the kiosk camera's picture | Apache-2.0 |
+| [Bootstrap](https://getbootstrap.com/) 5.3 | CSS only: grid, breakpoints and utility classes (no Bootstrap JavaScript) | MIT |
 
 ## Author
 

@@ -24,7 +24,8 @@ the **access point** (kiosk). Internet is only needed to sign in with SSO.
                                │ SQLAlchemy                            └────────────────────┘
 ┌──────────────────────────────▼───────────────────────────────┐
 │  SQLITE                                                      │
-│   users · face_templates · access_events · used_qr_nonces    │
+│   users · face_templates · access_events · used_qr_nonces ·  │
+│   terminals                                                  │
 └──────────────────────────────────────────────────────────────┘
 ```
 
@@ -373,8 +374,9 @@ SQLite in development, through SQLAlchemy (PostgreSQL on Supabase in the online 
 |---|---|---|
 | `users` | id, email, name, role (`admin` / `member`), is_active, password_hash (admins only), created_at, updated_at | Done |
 | `face_templates` | id, user_id (unique: one per user), descriptor (average of the captures, 128 numbers), created_at | Done |
-| `access_events` | id, user_id (empty if nobody was recognized), method (`face` / `qr`), result (`granted` / `denied`), direction (`in` / `out`), distance (face only), reason (denied only), created_at | Done |
+| `access_events` | id, user_id (empty if nobody was recognized), method (`face` / `qr`), result (`granted` / `denied`), direction (`in` / `out`), distance (face only), reason (denied only), location (place of the access point; empty in older events), created_at | Done |
 | `used_qr_nonces` | nonce (primary key, so it is unique; personal codes are prefixed `personal:`), used_at | Done |
+| `terminals` | id, location (`library`, `physics_lab`...), direction, last_seen_at. One row per place and direction, created by the kiosk's first contact; "connected" means a contact in the last 90 s (heartbeat every 30 s) | Done |
 
 Users are deactivated, never deleted, because access events point to them.
 
